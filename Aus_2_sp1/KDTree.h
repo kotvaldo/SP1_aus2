@@ -13,22 +13,21 @@ public:
 template <typename KeyType, typename DataType>
 struct KDTreeNode {
     KDTreeNode* parent;
-    KDTreeNode* left;
-    KDTreeNode* right;
-    size_t level;
-    DataType* data;
-    IComparable<KeyType>* keys;  //vseobecna implementacia 
-
+    KDTreeNode* _left;
+    KDTreeNode* _right;
+    size_t _level;
+    DataType* _data;
+    IComparable<KeyType>* _keys;  //vseobecna implementacia 
+    
     KDTreeNode(DataType* data, IComparable<KeyType>* keys, size_t level = 0)
         : data(data), keys(keys), level(level), parent(nullptr), left(nullptr), right(nullptr) {}
 };
 
 template <typename KeyType, typename DataType>
 class GeneralKDTree {
-public:
     using KDNodeType = KDTreeNode<KeyType, DataType>;
-
-    GeneralKDTree(size_t);
+public:
+    GeneralKDTree(size_t dim_count);
 
     void clear();
     KDNodeType* insert(DataType* data, IComparable<KeyType>* keys);
@@ -42,11 +41,13 @@ private:
 };
 
 template<typename KeyType, typename DataType>
-inline GeneralKDTree<KeyType, DataType>::GeneralKDTree(size_t k)
+inline GeneralKDTree<KeyType, DataType>::GeneralKDTree(size_t dim_count)
 {
     if (k < 1) {
-        throw exception()
+        throw invalid_argument("It has to be at least 1D Tree");
     }
+    this->k = dim_count;
+    this->size_ = 0;
 
 };
 
@@ -55,15 +56,45 @@ void GeneralKDTree<KeyType, DataType>::clear() {
     
 }
 
-
-
 template<typename KeyType, typename DataType>
-KDTreeNode* GeneralKDTree<KeyType, DataType>::insert(DataType* data, IComparable<KeyType>* keys) {
+KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType* data, IComparable<KeyType>* keys)
+{
+    if (keys == nullptr) {
+        throw invalid_argument("Keys cannot be nullptr");
+    }
     
+    if (size == 0) {
+        this->root = new KDNodeType(keys, data, 0);
+        this->size_ += 1;
+        return this->root;
+    }
+    
+    KDNodeType* current = this->root;
+    KDNodeType* parent = nullptr;
+    
+    size_t level = 0;
+    size_t curr_dim = 0; 
+    
+    while (current != nullptr) {
+        if (current->_keys->compare(keys, curr_dim) <= 0) {
+            parent = current;
+            current = current->_left;
+            level++;
+            curr_dim = curr_dim % this->k;
+        }
+        else {
+            parent = current;
+            current = current->_right;
+            level++;
+            curr_dim = curr_dim % this->k;
+        }
+
+    }
 }
 
 
+
 template<typename KeyType, typename DataType>
-inline size_t GeneralKDTree<KeyType, DataType>::size() const {
+size_t GeneralKDTree<KeyType, DataType>::size() const {
     return size_;
 }
