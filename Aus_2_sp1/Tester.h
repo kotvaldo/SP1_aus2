@@ -35,7 +35,7 @@ public:
             cout << "GPS point" << i + 1 << ": " << *gps << " successfuly added" << endl;
         }
 
-        cout << "Size of tree" << tree.size() << endl;
+        cout << "Size of tree: " << tree.size() << endl;
     }
 
     void clearStructure() {

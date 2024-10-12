@@ -11,11 +11,11 @@ struct KDTreeNode {
     KDTreeNode* parent;
     KDTreeNode* _left;
     KDTreeNode* _right;
-    size_t _level;
+    int _level;
     DataType* _data;
     KeyType* _keyPart;  // všeobecná implementácia 
 
-    KDTreeNode(DataType* data, KeyType* keys, size_t level = 0)
+    KDTreeNode(DataType* data, KeyType* keys, int level = 0)
         : _data(data), _keyPart(keys), _level(level), parent(nullptr), _left(nullptr), _right(nullptr) {}
 };
 
@@ -31,7 +31,7 @@ public:
     KDNodeType* accessRoot();
 
 private:
-    size_t size_;
+    int size_;
     KDNodeType* root;
     size_t k; // poèet dimenzií
 };
@@ -44,6 +44,7 @@ inline GeneralKDTree<KeyType, DataType>::GeneralKDTree(size_t dim_count)
     }
     this->k = dim_count;
     this->size_ = 0;
+    this->root = nullptr;
 }
 
 template<typename KeyType, typename DataType>
@@ -67,8 +68,8 @@ KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType
     KDNodeType* current = this->root;
     KDNodeType* parent = nullptr;
 
-    size_t level = 0;
-    size_t current_dimension = 0;
+    int level = 0;
+    int current_dimension = 0;
 
     while (current != nullptr) {
         parent = current;
