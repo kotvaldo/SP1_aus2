@@ -62,35 +62,49 @@ KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType
     if (keys == nullptr) {
         throw invalid_argument("Keys cannot be nullptr");
     }
-    
-    if (size == 0) {
-        this->root = new KDNodeType(keys, data, 0);
-        this->size_ += 1;
+
+    if (size_ == 0) {
+        this->root = new KDNodeType(data, keys, 0);
+        this->size_++;
         return this->root;
     }
-    
+
     KDNodeType* current = this->root;
     KDNodeType* parent = nullptr;
-    
+
     size_t level = 0;
-    size_t curr_dim = 0; 
-    
+    size_t current_dimension = 0;
+
     while (current != nullptr) {
-        if (current->_keys->compare(keys, curr_dim) <= 0) {
-            parent = current;
+        parent = current;
+
+        if (keys->compare(*current->_keys, current_dimension) <= 0) {
             current = current->_left;
-            level++;
-            curr_dim = curr_dim % this->k;
         }
         else {
-            parent = current;
             current = current->_right;
-            level++;
-            curr_dim = curr_dim % this->k;
         }
 
+        level++;
+        current_dimension = level % this->k;
     }
+
+    current_dimension = level % this->k;
+    if (keys->compare(*parent->_keys, current_dimension) <= 0) {
+        parent->_left = new KDNodeType(data, keys, level);
+        current = parent->_left;
+    }
+    else {
+        parent->_right = new KDNodeType(data, keys, level);
+        current = parent->_right;
+    }
+
+    current->parent = parent;
+    this->size_++;
+
+    return current;
 }
+
 
 
 
