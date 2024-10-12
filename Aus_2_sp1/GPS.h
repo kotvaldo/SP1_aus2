@@ -1,5 +1,14 @@
 #pragma once
-#include "KDTree.h"
+#include <iostream>
+using namespace std;
+
+template<typename T>
+class IComparable {
+public:
+    virtual int compare(const T& other, int cur_level) const = 0;
+    virtual ~IComparable() = default;
+};
+
 
 class GPS : public IComparable<GPS> {
 public:
@@ -8,7 +17,7 @@ public:
     GPS(int x = 0, int y = 0) : x(x), y(y) {}
 
     int compare(const GPS& other, int cur_level) const override {
-        if (cur_level % 2 == 0) {  
+        if (cur_level % 2 == 0) {  // 0 je pre x súradnicu
             if (this->x < other.x) return -1;
             if (this->x > other.x) return 1;
             return 0;
@@ -19,10 +28,9 @@ public:
             return 0;
         }
     }
-
-    friend ostream& operator<<(ostream& os, const GPS& gps) {
+    
+     friend ostream& operator<<(ostream& os, const GPS& gps) {
         os << "(" << gps.x << ", " << gps.y << ")";
         return os;
     }
-    
 };

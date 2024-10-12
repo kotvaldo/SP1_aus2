@@ -1,14 +1,10 @@
 #pragma once
 #include <iostream>
 #include <vector>
-using namespace std;
+#include "GPS.h"
 
-template<typename T>
-class IComparable {
-public:
-    virtual int compare(const T& other, int cur_level) const = 0;
-    virtual ~IComparable() = default;
-};
+
+using namespace std;
 
 template <typename KeyType, typename DataType>
 struct KDTreeNode {
@@ -17,10 +13,10 @@ struct KDTreeNode {
     KDTreeNode* _right;
     size_t _level;
     DataType* _data;
-    IComparable<KeyType>* _keys;  //vseobecna implementacia 
-    
-    KDTreeNode(DataType* data, IComparable<KeyType>* keys, size_t level = 0)
-        : _data(data), _keys(keys), _level(level), parent(nullptr), _left(nullptr), _right(nullptr) {}
+    KeyType* _keyPart;  // všeobecná implementácia 
+
+    KDTreeNode(DataType* data, KeyType* keys, size_t level = 0)
+        : _data(data), _keyPart(keys), _level(level), parent(nullptr), _left(nullptr), _right(nullptr) {}
 };
 
 template <typename KeyType, typename DataType>
@@ -30,35 +26,33 @@ public:
     GeneralKDTree(size_t dim_count);
 
     void clear();
-    KDNodeType* insert(DataType* data, IComparable<KeyType>* keys);
+    KDNodeType* insert(DataType* data, KeyType* keys);
     size_t size() const;
     KDNodeType* accessRoot();
 
 private:
     size_t size_;
     KDNodeType* root;
-    size_t k; //pocet dimensii;
-
+    size_t k; // poèet dimenzií
 };
 
 template<typename KeyType, typename DataType>
 inline GeneralKDTree<KeyType, DataType>::GeneralKDTree(size_t dim_count)
 {
-    if (k < 1) {
+    if (dim_count < 1) {
         throw invalid_argument("It has to be at least 1D Tree");
     }
     this->k = dim_count;
     this->size_ = 0;
-
-};
-
-template<typename KeyType, typename DataType>
-void GeneralKDTree<KeyType, DataType>::clear() {
-    
 }
 
 template<typename KeyType, typename DataType>
-KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType* data, IComparable<KeyType>* keys)
+void GeneralKDTree<KeyType, DataType>::clear() {
+
+}
+
+template<typename KeyType, typename DataType>
+KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType* data, KeyType* keys)
 {
     if (keys == nullptr) {
         throw invalid_argument("Keys cannot be nullptr");
@@ -79,7 +73,7 @@ KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType
     while (current != nullptr) {
         parent = current;
 
-        if (keys->compare(*current->_keys, current_dimension) <= 0) {
+        if (keys->compare(*(current->_keyPart), current_dimension) <= 0) {
             current = current->_left;
         }
         else {
@@ -91,7 +85,7 @@ KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType
     }
 
     current_dimension = level % this->k;
-    if (keys->compare(*current->_keys, current_dimension) <= 0) {
+    if (keys->compare(*(parent->_keyPart), current_dimension) <= 0) {
         parent->_left = new KDNodeType(data, keys, level);
         current = parent->_left;
     }
@@ -106,9 +100,6 @@ KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType
     return current;
 }
 
-
-
-
 template<typename KeyType, typename DataType>
 size_t GeneralKDTree<KeyType, DataType>::size() const {
     return size_;
@@ -119,6 +110,6 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::accessRo
 {
     if (this->root == nullptr) {
         throw out_of_range("Structure is empty");
-      }
+    }
     return this->root;
 }

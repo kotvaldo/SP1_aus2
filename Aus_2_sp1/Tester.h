@@ -3,6 +3,8 @@
 #include <random>
 #include <ctime>
 #include "GPS.h"
+#include "KDTree.h"
+
 using namespace std;
 
 class Tester {
@@ -37,20 +39,10 @@ public:
             tree.insert(gps, gps);
             gps_list.push_back(gps);
 
-            cout << "Bod " << i + 1 << ": " << *gps << " vložený do KD-stromu a pridaný do zoznamu." << endl;
         }
 
         cout << "Poèet uzlov v strome: " << tree.size() << endl;
     }
 
-    void clearGPSObjects() {
-        for (GPS* gps : gps_list) {
-            delete gps;
-        }
-        gps_list.clear();
-    }
-
-    ~Tester() {
-        clearGPSObjects();
-    }
+   
 };
