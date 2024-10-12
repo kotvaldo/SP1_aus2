@@ -20,7 +20,7 @@ struct KDTreeNode {
     IComparable<KeyType>* _keys;  //vseobecna implementacia 
     
     KDTreeNode(DataType* data, IComparable<KeyType>* keys, size_t level = 0)
-        : data(data), keys(keys), level(level), parent(nullptr), left(nullptr), right(nullptr) {}
+        : _data(data), _keys(keys), _level(level), parent(nullptr), _left(nullptr), _right(nullptr) {}
 };
 
 template <typename KeyType, typename DataType>
@@ -32,6 +32,7 @@ public:
     void clear();
     KDNodeType* insert(DataType* data, IComparable<KeyType>* keys);
     size_t size() const;
+    KDNodeType* accessRoot();
 
 private:
     size_t size_;
@@ -90,7 +91,7 @@ KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType
     }
 
     current_dimension = level % this->k;
-    if (keys->compare(*parent->_keys, current_dimension) <= 0) {
+    if (keys->compare(*current->_keys, current_dimension) <= 0) {
         parent->_left = new KDNodeType(data, keys, level);
         current = parent->_left;
     }
@@ -111,4 +112,13 @@ KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType
 template<typename KeyType, typename DataType>
 size_t GeneralKDTree<KeyType, DataType>::size() const {
     return size_;
+}
+
+template<typename KeyType, typename DataType>
+inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::accessRoot()
+{
+    if (this->root == nullptr) {
+        throw out_of_range("Structure is empty");
+      }
+    return this->root;
 }

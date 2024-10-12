@@ -2,8 +2,10 @@
 //
 
 #include <iostream>
+#include "Tester.h"
 
 int main()
 {
-    
+    Tester* t = new Tester(100, 100, 300, 0);
+    t->run();
 }
