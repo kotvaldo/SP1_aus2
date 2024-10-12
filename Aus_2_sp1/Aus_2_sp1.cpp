@@ -10,7 +10,8 @@ int main()
     Tester* t = new Tester();
     
     
-    t->genPoints(100, 100, 300, 0);
+    //t->genPoints(100, 100, 300, 0);
+    t->genPoints(100, 10, 50, 1728739286);
     while (end != true) {
 
     }

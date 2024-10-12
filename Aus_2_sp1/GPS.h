@@ -18,13 +18,13 @@ public:
 
     int compare(const GPS& other, int cur_level) const override {
         if (cur_level % 2 == 0) {  // 0 je pre x súradnicu
-            if (this->x < other.x) return -1;
-            if (this->x > other.x) return 1;
+            if (this->x > other.x) return -1;
+            if (this->x < other.x) return 1;
             return 0;
         }
         else {  
-            if (this->y < other.y) return -1;
-            if (this->y > other.y) return 1;
+            if (this->y > other.y) return -1;
+            if (this->y < other.y) return 1;
             return 0;
         }
     }
