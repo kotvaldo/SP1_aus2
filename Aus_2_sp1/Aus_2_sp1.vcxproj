@@ -130,7 +130,9 @@
     <ClCompile Include="Aus_2_sp1.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GPS.h" />
     <ClInclude Include="KDTree.h" />
+    <ClInclude Include="Tester.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
