@@ -15,14 +15,14 @@ private:
 public:
 	Tester() : tree(2) {}
 
-	void genPoints(int num_points, int range_min, int range_max, unsigned int seed = 0) {
+	void genPoints(int num_points, int range_min, int range_max, unsigned int seed = 0, bool desc = false) {
 		if (seed == 0) {
 			seed = static_cast<unsigned int>(time(0));
 		}
 		mt19937 gen(seed);
 		uniform_int_distribution<> dis(range_min, range_max);
 
-		cout << "Seed: " << seed << endl;
+		if(desc) cout << "Seed: " << seed << endl;
 
 		for (int i = 0; i < num_points; ++i) {
 			int x = dis(gen);
@@ -32,10 +32,10 @@ public:
 			tree.insert(gps, gps);
 			gps_list.push_back(gps);
 
-			cout << "GPS point" << i + 1 << ": " << *gps << " successfuly added" << endl;
+			if(desc == true) cout << "GPS point" << i + 1 << ": " << *gps << " successfuly added" << endl;
 		}
 
-		treeSizeCheck();
+		if(desc == true) treeSizeCheck();
 	}
 
 
@@ -55,6 +55,16 @@ public:
 			treeSizeCheck();
 			
 
+		}
+	}
+
+	void oscilate(int count) {
+		for (int i = 1; i <= count; ++i) {
+			genPoints(10, 0, 100, 0);
+
+			treeSizeCheck();
+
+			clearStructure();
 		}
 	}
 
@@ -87,6 +97,7 @@ public:
 
 	~Tester() {
 		clearStructure();
+
 	}
 
 

@@ -25,7 +25,7 @@ class GeneralKDTree {
 	using KDNodeType = KDTreeNode<KeyType, DataType>;
 public:
 	GeneralKDTree(size_t dim_count);
-
+	~GeneralKDTree();
 	void clear();
 	KDNodeType* insert(DataType* data, KeyType* keys);
 	size_t size() const;
@@ -46,6 +46,12 @@ inline GeneralKDTree<KeyType, DataType>::GeneralKDTree(size_t dim_count)
 	this->k = dim_count;
 	this->size_ = 0;
 	this->root = nullptr;
+}
+
+template<typename KeyType, typename DataType>
+inline GeneralKDTree<KeyType, DataType>::~GeneralKDTree()
+{
+	this->clear();
 }
 
 template<typename KeyType, typename DataType>
