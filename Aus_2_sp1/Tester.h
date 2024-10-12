@@ -9,23 +9,16 @@ using namespace std;
 
 class Tester {
 private:
-    int num_points;
-    int range_min;
-    int range_max;
     vector<GPS*> gps_list;
-    unsigned int seed;
+    GeneralKDTree<GPS, GPS> tree;  
 
 public:
-    Tester(int num_points, int range_min, int range_max, unsigned int setSeed = 0)
-        : num_points(num_points), range_min(range_min), range_max(range_max), seed(setSeed) {
+    Tester() : tree(2) {}  
+
+    void genPoints(int num_points, int range_min, int range_max, unsigned int seed = 0) {
         if (seed == 0) {
             seed = static_cast<unsigned int>(time(0));
         }
-    }
-
-    void run() {
-        GeneralKDTree<GPS, GPS> tree(2);
-
         mt19937 gen(seed);
         uniform_int_distribution<> dis(range_min, range_max);
 
@@ -39,10 +32,20 @@ public:
             tree.insert(gps, gps);
             gps_list.push_back(gps);
 
+            cout << "GPS point" << i + 1 << ": " << *gps << " successfuly added" << endl;
         }
 
-        cout << "Poèet uzlov v strome: " << tree.size() << endl;
+        cout << "Size of tree" << tree.size() << endl;
     }
 
-   
+    void clearStructure() {
+        for (GPS* gps : gps_list) {
+            delete gps;
+        }
+        gps_list.clear();
+    }
+
+    ~Tester() {
+        clearStructure();
+    }
 };

@@ -6,6 +6,12 @@
 
 int main()
 {
-    Tester* t = new Tester(100, 100, 300, 0);
-    t->run();
+    bool end = false;
+    Tester* t = new Tester();
+    
+    
+    t->genPoints(100, 100, 300, 0);
+    while (end != true) {
+
+    }
 }

@@ -85,18 +85,20 @@ KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType
     }
 
     current_dimension = level % this->k;
-    if (keys->compare(*(parent->_keyPart), current_dimension) <= 0) {
-        parent->_left = new KDNodeType(data, keys, level);
-        current = parent->_left;
-    }
-    else {
-        parent->_right = new KDNodeType(data, keys, level);
-        current = parent->_right;
-    }
+    if (parent != nullptr) {
+        if (keys->compare(*(parent->_keyPart), current_dimension) <= 0) {
+            parent->_left = new KDNodeType(data, keys, level);
+            current = parent->_left;
+        }
+        else {
+            parent->_right = new KDNodeType(data, keys, level);
+            current = parent->_right;
+        }
 
-    current->parent = parent;
-    this->size_++;
-
+        current->parent = parent;
+        this->size_++;
+    }
+    
     return current;
 }
 
