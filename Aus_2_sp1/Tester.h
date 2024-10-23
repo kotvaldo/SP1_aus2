@@ -32,7 +32,7 @@ public:
 			tree.insert(gps, gps);
 			gps_list.push_back(gps);
 
-			if(desc == true) cout << "GPS point" << i + 1 << ": " << *gps << " successfuly added" << endl;
+			if(desc == true) cout <<  i + 1 << ".GPS point " << ": " << *gps << " successfuly added" << endl;
 		}
 
 		if(desc == true) treeSizeCheck();
@@ -84,6 +84,25 @@ public:
 
 	}
 
+	void findDataWithDuplicates(int x, int y) {
+		if (tree.size() != 0) {
+			GPS gps(x, y);
+			vector<GPS*> datas = tree.find(&gps);
+			if (datas.size() == 0) {
+				cout << "No data found" << endl;
+			}	
+			else {
+				for (GPS* d : datas) {
+					cout << "GPS point" << *d << endl;
+				}
+			}
+			
+		}
+		else {
+			cout << "Tree is empty, fill it.";
+		}
+		
+	}
 
 	void clearStructure() {
 

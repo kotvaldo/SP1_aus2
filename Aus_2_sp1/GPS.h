@@ -6,6 +6,7 @@ template<typename T>
 class IComparable {
 public:
     virtual int compare(const T& other, int cur_level) const = 0;
+    virtual bool equals(const T& other) const = 0;
     virtual ~IComparable() = default;
 };
 
@@ -33,4 +34,10 @@ public:
         os << "(" << gps.x << ", " << gps.y << ")";
         return os;
     }
+    
+     bool equals(const GPS& other) const override {
+         return this->x == other.x && this->y == other.y;
+     }
+
 };
+

@@ -27,10 +27,11 @@ public:
 	GeneralKDTree(size_t dim_count);
 	~GeneralKDTree();
 	void clear();
+	vector<DataType*> find(KeyType* keys);
 	KDNodeType* insert(DataType* data, KeyType* keys);
 	size_t size() const;
 	KDNodeType* accessRoot();
-	void inOrderTraversal(std::function<void(KDNodeType*)> func);
+	void inOrderTraversal(std::function<void(KDNodeType*)> func, KDNodeType* startNode = nullptr);
 private:
 	int size_;
 	KDNodeType* root;
@@ -83,12 +84,44 @@ void GeneralKDTree<KeyType, DataType>::clear() {
 }
 
 template<typename KeyType, typename DataType>
+vector<DataType*> GeneralKDTree<KeyType, DataType>::find(KeyType* keys) {
+	vector<DataType*> duplicates;
+
+	KDNodeType* current = this->root;
+	int level = 0;
+
+	while (current != nullptr) {
+		if (keys->equals(*(current->_keyPart))) {
+			inOrderTraversal([&](KDNodeType* node) {
+				if (keys->equals(*(node->_keyPart))) {
+					duplicates.push_back(node->_data);
+				}
+				}, current);  
+			break;
+		}
+
+
+		int current_dimension = level % this->k;
+		if (keys->compare(*(current->_keyPart), current_dimension) <= 0) {
+			current = current->_left;  
+		}
+		else {
+			current = current->_right;  
+		}
+
+		level++;
+	}
+
+	return duplicates;
+}
+
+
+template<typename KeyType, typename DataType>
 KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType* data, KeyType* keys)
 {
 	if (keys == nullptr) {
 		throw invalid_argument("Keys cannot be nullptr");
 	}
-
 	if (size_ == 0) {
 		this->root = new KDNodeType(data, keys, 0);
 		this->size_++;
@@ -123,7 +156,7 @@ KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::insert(DataType
 
 	current_dimension = level % this->k;
 
-	if (keys->compare(*(parent->_keyPart), current_dimension) <= 0) {
+	if (keys->compare(*(parent->_keyPart), current_dimension) <= 0) { 
 		parent->_left = new KDNodeType(data, keys, level);  
 		current = parent->_left;
 	}
@@ -152,12 +185,16 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::accessRo
 }
 
 template<typename KeyType, typename DataType>
-inline void GeneralKDTree<KeyType, DataType>::inOrderTraversal(std::function<void(KDNodeType*)> func)
+inline void GeneralKDTree<KeyType, DataType>::inOrderTraversal(std::function<void(KDNodeType*)> func, KDNodeType* startNode /* = nullptr */)
 {
-	if (root == nullptr) return;
+	if (startNode == nullptr) {
+		startNode = root;
+	}
+
+	if (startNode == nullptr) return;
 
 	std::stack<KDNodeType*> nodeStack;
-	KDNodeType* current = root;
+	KDNodeType* current = startNode;
 
 	while (!nodeStack.empty() || current != nullptr) {
 		while (current != nullptr) {
@@ -173,3 +210,6 @@ inline void GeneralKDTree<KeyType, DataType>::inOrderTraversal(std::function<voi
 		current = current->_right;
 	}
 }
+
+
+

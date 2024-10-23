@@ -7,12 +7,12 @@ void displayMenu() {
 
     cout << endl << endl << "---------------------------------------------------------------" << endl;
     cout << endl << "What next? Choose an option:" << endl;
-
     cout << "1: Generate Points" << endl;
     cout << "2: Test Seeds" << endl;
     cout << "3: Oscillate" << endl;
     cout << "4: Clear Structure" << endl;
-    cout << "5: End" << endl;
+    cout << "5: Find Nodes" << endl;
+    cout << "6: End" << endl;
 }
 
 int main() {
@@ -57,7 +57,18 @@ int main() {
         case 4:
             t->clearStructure();
             break;
-        case 5:
+        case 5: {
+            int x, y;
+            cout << "Enter x-coordinate: ";
+            cin >> x;
+            cout << "Enter y-coordinate: ";
+            cin >> y;
+
+            
+            t->findDataWithDuplicates(x, y);
+            break;
+        }
+        case 6:
             end = true;
             break;
         default:
