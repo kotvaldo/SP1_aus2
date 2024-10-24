@@ -2,7 +2,7 @@
 #include <vector>
 #include <random>
 #include <ctime>
-#include "GPS.h"
+#include "DataRes.h"
 #include "KDTree.h"
 
 using namespace std;
