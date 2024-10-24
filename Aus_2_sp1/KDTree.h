@@ -94,12 +94,8 @@ vector<DataType*> GeneralKDTree<KeyType, DataType>::find(KeyType* keys) {
 
 	while (current != nullptr) {
 		if (keys->equals(*(current->_keyPart))) {
-			inOrderTraversal([&](KDNodeType* node) {
-				if (keys->equals(*(node->_keyPart))) {
-					duplicates.push_back(node->_data);
-				}
-				}, current);  
-			break;
+			duplicates.push_back(current->_data);
+
 		}
 
 
@@ -127,7 +123,7 @@ DataType* GeneralKDTree<KeyType, DataType>::insert(DataType* data, KeyType* keys
 	if (size_ == 0) {
 		this->root = new KDNodeType(data, keys, 0);
 		this->size_++;
-		return this->root;
+		return this->root->_data;
 	}
 
 	KDNodeType* current = this->root;
@@ -236,7 +232,7 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findNode
 		}
 		++level;
 	}
-	return 
+	return nullptr;
 }
 
 
