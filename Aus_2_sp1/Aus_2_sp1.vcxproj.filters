@@ -26,7 +26,7 @@
     <ClInclude Include="Tester.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataRes.h">
+    <ClInclude Include="Models.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

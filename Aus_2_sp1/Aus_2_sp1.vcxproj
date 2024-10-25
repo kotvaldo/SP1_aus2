@@ -130,7 +130,7 @@
     <ClCompile Include="Aus_2_sp1.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DataRes.h" />
+    <ClInclude Include="Models.h" />
     <ClInclude Include="KDTree.h" />
     <ClInclude Include="Tester.h" />
   </ItemGroup>
