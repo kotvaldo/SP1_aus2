@@ -39,7 +39,6 @@ public:
     }
 };
 
-// Deklarácia triedy Nehnutelnost, ktorú potrebujeme poui
 class Nehnutelnost;
 class Parcela;
 
@@ -69,6 +68,14 @@ public:
     bool equals(const Area& other) const override {
         return this->gps->x == other.gps->x && this->gps->y == other.gps->y && this->uid == other.uid;
     }
+
+    friend ostream& operator<<(ostream& os, const Area& area) {
+        os << "Area(uid: " << area.uid << ", GPS: " << *area.gps;
+        if (area.nehnutelnost) os << ", Nehnutelnost: " << *area.nehnutelnost;
+        if (area.parcela) os << ", Parcela: " << *area.parcela;
+        os << ")";
+        return os;
+    }
 };
 
 class Nehnutelnost : public IComparable<Nehnutelnost> {
@@ -94,6 +101,11 @@ public:
             return 0;
         }
     }
+
+    friend ostream& operator<<(ostream& os, const Nehnutelnost& nehnutelnost) {
+        os << "Nehnutelnost(uid: " << nehnutelnost.uid << ", GPS: " << *nehnutelnost.gps << ")";
+        return os;
+    }
 };
 
 class Parcela : public IComparable<Parcela> {
@@ -118,5 +130,10 @@ public:
             if (this->gps->y > other.gps->y) return 1;
             return 0;
         }
+    }
+
+    friend ostream& operator<<(ostream& os, const Parcela& parcela) {
+        os << "Parcela(uid: " << parcela.uid << ", GPS: " << *parcela.gps << ")";
+        return os;
     }
 };
