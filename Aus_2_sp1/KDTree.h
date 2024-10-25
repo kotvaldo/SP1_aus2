@@ -30,8 +30,14 @@ public:
 	void clear();
 	vector<DataType*> find(KeyType* keys);
 	DataType* insert(DataType* data, KeyType* keys);
+	bool removeNode(DataType* data);
 	size_t size() const;
 	KDNodeType* accessRoot();
+	bool hasLeftSon(KDNodeType* node);
+	bool hasRightSon(KDNodeType* node);
+	bool isLeaf(KDNodeType* node);
+	bool isLeftSon(KDNodeType* node, KDNodeType* parent);
+	bool isRightSon(KDNodeType* node, KDNodeType* parent);
 	void inOrderTraversal(std::function<void(KDNodeType*)> func, KDNodeType* startNode = nullptr);
 private:
 	int size_;
@@ -168,6 +174,29 @@ DataType* GeneralKDTree<KeyType, DataType>::insert(DataType* data, KeyType* keys
 }
 
 template<typename KeyType, typename DataType>
+inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data)
+{
+	KDNodeType* node = this->findNodeWithData(data);
+	if (node == nullptr) {
+		return false;
+	}
+	if (isLeaf(node)) {
+		KDNodeType* parent = node->parent;
+		if (isLeftSon(node, parent)) {
+			parent->_left = nullptr;
+		}
+		else if (isRightSon(node, parent)) {
+			parent->_right = nullptr
+		}
+
+		node->_data = nullptr;
+		node->_keyPart = nullptr;
+		delete node;
+	}
+
+}
+
+template<typename KeyType, typename DataType>
 size_t GeneralKDTree<KeyType, DataType>::size() const {
 	return size_;
 }
@@ -180,6 +209,7 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::accessRo
 	}
 	return this->root;
 }
+
 
 template<typename KeyType, typename DataType>
 inline void GeneralKDTree<KeyType, DataType>::inOrderTraversal(std::function<void(KDNodeType*)> func, KDNodeType* startNode /* = nullptr */)
@@ -237,3 +267,43 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findNode
 
 
 
+template<typename KeyType, typename DataType>
+inline bool GeneralKDTree<KeyType, DataType>::hasLeftSon(KDNodeType* node)
+{
+	if (node == nullptr) {
+		return false;
+	}
+	return node->_left != nullptr;
+}
+
+template<typename KeyType, typename DataType>
+inline bool GeneralKDTree<KeyType, DataType>::hasRightSon(KDNodeType* node)
+{
+	if (node == nullptr) {
+		return false;
+	}
+	return node->_right != nullptr;
+}
+
+
+template<typename KeyType, typename DataType>
+inline bool GeneralKDTree<KeyType, DataType>::isLeaf(KDNodeType* node)
+{
+	if (node == nullptr) {
+		return false;
+	}
+
+	return node->_right == nullptr && node->_left == nullptr;
+}
+
+template<typename KeyType, typename DataType>
+inline bool GeneralKDTree<KeyType, DataType>::isLeftSon(KDNodeType* node, KDNodeType* parent)
+{
+	return hasLeftSon(parent) && parent->_left == node;
+}
+
+template<typename KeyType, typename DataType>
+inline bool GeneralKDTree<KeyType, DataType>::isRightSon(KDNodeType* node, KDNodeType* parent)
+{
+	return hasRightSon(parent) && parent->_right == node;
+}

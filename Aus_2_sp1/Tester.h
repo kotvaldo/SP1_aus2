@@ -12,7 +12,7 @@ class Tester {
 private:
 	vector<DataType*> gps_list;
 	GeneralKDTree<GPS, DataType> tree;
-	vector<int> uid_list = { 1 };
+	vector<int> uid_list;
 public:
 	Tester() : tree(2) {}
 
