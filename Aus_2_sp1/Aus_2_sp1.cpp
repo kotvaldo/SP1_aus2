@@ -17,7 +17,7 @@ void displayMenu() {
 
 int main() {
     bool end = false;
-    Tester* t = new Tester();
+    Tester<Nehnutelnost>* t = new Tester<Nehnutelnost>();
 
     while (!end) {
         displayMenu();
