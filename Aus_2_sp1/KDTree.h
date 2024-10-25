@@ -355,7 +355,7 @@ template<typename KeyType, typename DataType>
 inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findMinInRightSubTree(KDNodeType* parent)
 {
 	if (parent == nullptr || parent->_right == nullptr) {
-		return nullptr;  // Ak neexistuje pravý podstrom, vrátime nullptr
+		return nullptr; 
 	}
 
 	KDNodeType* current = parent->_right;
@@ -369,12 +369,10 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findMinI
 		KDNodeType* node = nodesToVisit.top();
 		nodesToVisit.pop();
 
-		// Aktualizácia minNode, ak má node menšiu hodnotu v cie¾ovej dimenzii
 		if (node->_keyPart->compare(*(minNode->_keyPart), target_dimension) < 0) {
 			minNode = node;
 		}
 
-		// Preh¾adávame obe vetvy, ak nie sme na cie¾ovej dimenzii
 		if (node->_level % this->k != target_dimension) {
 			if (node->_left != nullptr) {
 				nodesToVisit.push(node->_left);
@@ -384,7 +382,6 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findMinI
 			}
 		}
 		else {
-			// Na cie¾ovej dimenzii preh¾adáme iba ¾avú vetvu
 			if (node->_left != nullptr) {
 				nodesToVisit.push(node->_left);
 			}
