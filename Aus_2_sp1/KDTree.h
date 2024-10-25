@@ -15,7 +15,7 @@ struct KDTreeNode {
 	KDTreeNode* _right;
 	int _level;
 	DataType* _data;
-	KeyType* _keyPart;   
+	KeyType* _keyPart;
 
 	KDTreeNode(DataType* data, KeyType* keys, int level = 0)
 		: _data(data), _keyPart(keys), _level(level), parent(nullptr), _left(nullptr), _right(nullptr) {}
@@ -38,6 +38,8 @@ public:
 	bool isLeaf(KDNodeType* node);
 	bool isLeftSon(KDNodeType* node, KDNodeType* parent);
 	bool isRightSon(KDNodeType* node, KDNodeType* parent);
+	KDNodeType* findMaxInLeftSubTree(KDNodeType* parent);
+	KDNodeType* findMinInRightSubTree(KDNodeType* parent);
 	void inOrderTraversal(std::function<void(KDNodeType*)> func, KDNodeType* startNode = nullptr);
 private:
 	int size_;
@@ -82,8 +84,8 @@ void GeneralKDTree<KeyType, DataType>::clear() {
 			nodeStack.push(current->_right);
 		}
 
-		current->_data = nullptr;  
-		current->_keyPart = nullptr;  
+		current->_data = nullptr;
+		current->_keyPart = nullptr;
 		delete current;
 	}
 
@@ -107,10 +109,10 @@ vector<DataType*> GeneralKDTree<KeyType, DataType>::find(KeyType* keys) {
 
 		int current_dimension = level % this->k;
 		if (keys->compare(*(current->_keyPart), current_dimension) <= 0) {
-			current = current->_left;  
+			current = current->_left;
 		}
 		else {
-			current = current->_right;  
+			current = current->_right;
 		}
 
 		level++;
@@ -142,13 +144,13 @@ DataType* GeneralKDTree<KeyType, DataType>::insert(DataType* data, KeyType* keys
 		parent = current;
 		if (keys->compare(*(current->_keyPart), current_dimension) <= 0) {
 			if (current->_left == nullptr) {
-				break;  
+				break;
 			}
 			current = current->_left;
 		}
 		else {
 			if (current->_right == nullptr) {
-				break;  
+				break;
 			}
 			current = current->_right;
 		}
@@ -159,12 +161,12 @@ DataType* GeneralKDTree<KeyType, DataType>::insert(DataType* data, KeyType* keys
 
 	current_dimension = level % this->k;
 
-	if (keys->compare(*(parent->_keyPart), current_dimension) <= 0) { 
-		parent->_left = new KDNodeType(data, keys, level);  
+	if (keys->compare(*(parent->_keyPart), current_dimension) <= 0) {
+		parent->_left = new KDNodeType(data, keys, level);
 		current = parent->_left;
 	}
 	else {
-		parent->_right = new KDNodeType(data, keys, level);  
+		parent->_right = new KDNodeType(data, keys, level);
 		current = parent->_right;
 	}
 
@@ -186,7 +188,7 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data)
 			parent->_left = nullptr;
 		}
 		else if (isRightSon(node, parent)) {
-			parent->_right = nullptr
+			parent->_right = nullptr;
 		}
 
 		node->_data = nullptr;
@@ -242,7 +244,7 @@ template<typename KeyType, typename DataType>
 inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findNodeWithData(DataType* data)
 {
 	if (this->size_ == 0) return nullptr;
-	
+
 	int level = 0;
 	KDNodeType* current = this->root;
 
@@ -306,4 +308,89 @@ template<typename KeyType, typename DataType>
 inline bool GeneralKDTree<KeyType, DataType>::isRightSon(KDNodeType* node, KDNodeType* parent)
 {
 	return hasRightSon(parent) && parent->_right == node;
+}
+
+template<typename KeyType, typename DataType>
+inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findMaxInLeftSubTree(KDNodeType* parent)
+{
+	if (parent == nullptr || parent->_left == nullptr) {
+		return nullptr; 
+	}
+
+	KDNodeType* current = parent->_left;
+	KDNodeType* maxNode = current;
+	int target_dimension = parent->_level % this->k;
+
+	std::stack<KDNodeType*> nodesToVisit;
+	nodesToVisit.push(current);
+
+	while (!nodesToVisit.empty()) {
+		KDNodeType* node = nodesToVisit.top();
+		nodesToVisit.pop();
+
+		if (node->_keyPart->compare(*(maxNode->_keyPart), target_dimension) > 0) {
+			maxNode = node;
+		}
+
+		if (node->_level % this->k != target_dimension) {
+			if (node->_left != nullptr) {
+				nodesToVisit.push(node->_left);
+			}
+			if (node->_right != nullptr) {
+				nodesToVisit.push(node->_right);
+			}
+		}
+		else {
+			if (node->_right != nullptr) {
+				nodesToVisit.push(node->_right);
+			}
+		}
+	}
+
+	return maxNode;
+
+}
+
+template<typename KeyType, typename DataType>
+inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findMinInRightSubTree(KDNodeType* parent)
+{
+	if (parent == nullptr || parent->_right == nullptr) {
+		return nullptr;  // Ak neexistuje pravý podstrom, vrátime nullptr
+	}
+
+	KDNodeType* current = parent->_right;
+	KDNodeType* minNode = current;
+	int target_dimension = parent->_level % this->k;
+
+	std::stack<KDNodeType*> nodesToVisit;
+	nodesToVisit.push(current);
+
+	while (!nodesToVisit.empty()) {
+		KDNodeType* node = nodesToVisit.top();
+		nodesToVisit.pop();
+
+		// Aktualizácia minNode, ak má node menšiu hodnotu v cie¾ovej dimenzii
+		if (node->_keyPart->compare(*(minNode->_keyPart), target_dimension) < 0) {
+			minNode = node;
+		}
+
+		// Preh¾adávame obe vetvy, ak nie sme na cie¾ovej dimenzii
+		if (node->_level % this->k != target_dimension) {
+			if (node->_left != nullptr) {
+				nodesToVisit.push(node->_left);
+			}
+			if (node->_right != nullptr) {
+				nodesToVisit.push(node->_right);
+			}
+		}
+		else {
+			// Na cie¾ovej dimenzii preh¾adáme iba ¾avú vetvu
+			if (node->_left != nullptr) {
+				nodesToVisit.push(node->_left);
+			}
+		}
+	}
+
+	return minNode;
+
 }
