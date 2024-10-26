@@ -103,6 +103,68 @@ public:
 		}
 	}
 
+	void deleteTestWithParams(int id) {
+		DataType* property = nullptr;
+
+		// prvok s idckom
+		for (auto it = gps_list.begin(); it != gps_list.end(); ++it) {
+			if ((*it)->uid == id) {   //porovnanie
+				property = *it;
+
+				if (tree.removeNode(property)) {
+					cout << "Property deleted successfully." << endl;
+
+					gps_list.erase(it);
+				}
+				else {
+					cout << "Failed to delete the property from the tree." << endl;
+				}
+
+				break; // Ak nájdeme a spracujeme prvok, ukonèíme cyklus
+			}
+		}
+
+		// Ak prvok s ID neexistoval v gps_list
+		if (property == nullptr) {
+			cout << "No property found with the given ID: " << id << endl;
+		}
+	}
+
+
+
+	void printTreeNodes() {
+
+
+		if (tree.size() == 0) {
+			cout << "The tree is empty." << endl;
+			return;
+		}
+
+		vector<DataType*> nodes;
+
+		// In-order prehliadka stromu, ktorá uzly ukladá do vektora
+		tree.inOrderTraversal([&](KDTreeNode<GPS, DataType>* node) {
+			nodes.push_back(node->_data);  // Ukladáme uzly do vektora
+			});
+
+		// Usporiadanie vektora pod¾a ID
+		std::sort(nodes.begin(), nodes.end(), [](const DataType* a, const DataType* b) {
+			return a->uid < b->uid;  // Predpokladáme, že DataType má metódu getId() na získanie ID
+			});
+
+		// Vypíšeme usporiadané uzly
+		for (const auto& node : nodes) {
+			if (node != nullptr) {
+				cout << *node << endl;  // Výpis uzlov, predpokladáme implementovaný operátor <<
+			}
+		}
+
+		// Skontrolujeme ve¾kos stromu
+		treeSizeCheck();
+	}
+
+
+
 	void clearStructure() {
 		tree.clear();
 		for (DataType* n : gps_list) {

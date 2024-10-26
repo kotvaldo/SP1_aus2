@@ -4,7 +4,6 @@
 using namespace std;
 
 void displayMenu() {
-
     cout << endl << endl << "---------------------------------------------------------------" << endl;
     cout << endl << "What next? Choose an option:" << endl;
     cout << "1: Generate Points" << endl;
@@ -12,7 +11,9 @@ void displayMenu() {
     cout << "3: Oscillate" << endl;
     cout << "4: Clear Structure" << endl;
     cout << "5: Find Nodes" << endl;
-    cout << "6: End" << endl;
+    cout << "6: Remove Node" << endl;
+    cout << "7: Print Tree" << endl;  // Pridáme možnos na výpis stromu
+    cout << "8: End" << endl;
 }
 
 int main() {
@@ -63,12 +64,22 @@ int main() {
             cin >> x;
             cout << "Enter y-coordinate: ";
             cin >> y;
-
-            
             t->findDataWithDuplicates(x, y);
             break;
         }
-        case 6:
+        case 6: {
+            int id;
+            cout << "Enter ID of the node: ";
+            cin >> id;
+        
+
+            t->deleteTestWithParams(id);
+            break;
+        }
+        case 7:  // Nová možnos pre výpis stromu
+            t->printTreeNodes();  // Zavoláme metódu na výpis uzlov stromu
+            break;
+        case 8:
             end = true;
             break;
         default:

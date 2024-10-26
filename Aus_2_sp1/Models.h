@@ -8,6 +8,7 @@ public:
     virtual int compare(const T& other, int cur_level) const = 0;
     virtual bool equals(const T& other) const = 0;
     virtual ~IComparable() = default;
+    
 };
 
 class GPS : public IComparable<GPS> {
