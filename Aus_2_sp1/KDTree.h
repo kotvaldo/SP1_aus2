@@ -95,12 +95,12 @@ void GeneralKDTree<KeyType, DataType>::clear() {
 template<typename KeyType, typename DataType>
 vector<DataType*> GeneralKDTree<KeyType, DataType>::find(KeyType* keys) {
 	vector<DataType*> duplicates;
-
+	 
 	KDNodeType* current = this->root;
 	int level = 0;
 
 	while (current != nullptr) {
-		if (keys->equals(*(current->_keyPart))) {
+		if (keys->equalsByKeys(*(current->_keyPart))) {
 			duplicates.push_back(current->_data);
 		}
 
@@ -117,6 +117,7 @@ vector<DataType*> GeneralKDTree<KeyType, DataType>::find(KeyType* keys) {
 
 	return duplicates;
 }
+
 
 template<typename KeyType, typename DataType>
 DataType* GeneralKDTree<KeyType, DataType>::insert(DataType* data, KeyType* keys) {
@@ -237,12 +238,12 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data) {
 		}
 	}
 
-	if (node != nullptr && node->_right != nullptr) {
+	if (!isLeafAfterComing) {
 		std::cout << "Reinserting nodes with the same key after removal." << std::endl;
 		reinsertNodesWithSameKey(node);
 	}
 	else {
-		std::cout << "Skipping reinsertion as node or right subtree is null." << std::endl;
+		std::cout << "Skipping reinsertion as node was initially a leaf." << std::endl;
 	}
 
 	std::cout << "Node removal completed." << std::endl;
@@ -433,7 +434,10 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findMinI
 
 template<typename KeyType, typename DataType>
 inline void GeneralKDTree<KeyType, DataType>::reinsertNodesWithSameKey(KDNodeType* node) {
-	if (node == nullptr || node->_right == nullptr) return;
+	if (node == nullptr || node->_right == nullptr) {
+		std::cout << "No right subtree for reinsertion." << std::endl;
+		return;
+	}
 
 	std::vector<std::pair<DataType*, KeyType*>> nodesToReinsert;
 	std::stack<KDNodeType*> nodesToVisit;
@@ -459,10 +463,11 @@ inline void GeneralKDTree<KeyType, DataType>::reinsertNodesWithSameKey(KDNodeTyp
 	}
 
 	for (const auto& [data, keyPart] : nodesToReinsert) {
-		removeNode(data);
-	}
-
-	for (const auto& [data, keyPart] : nodesToReinsert) {
-		this->insert(data, keyPart);
+		if (findNodeWithData(data) != nullptr) {  // Overenie, èi uzol existuje pred odstránením
+			removeNode(data);
+		}
+		this->insert(data, keyPart);  // Reinsercia uzla
 	}
 }
+
+

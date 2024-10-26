@@ -12,13 +12,13 @@ void displayMenu() {
     cout << "4: Clear Structure" << endl;
     cout << "5: Find Nodes" << endl;
     cout << "6: Remove Node" << endl;
-    cout << "7: Print Tree" << endl;  // Pridáme monos na vıpis stromu
+    cout << "7: Print Tree" << endl;
     cout << "8: End" << endl;
 }
 
 int main() {
     bool end = false;
-    Tester<Nehnutelnost>* t = new Tester<Nehnutelnost>();
+    Tester<TestClass>* t = new Tester<TestClass>();  // Pouívame TestClass namiesto Nehnutelnost
 
     while (!end) {
         displayMenu();
@@ -59,21 +59,25 @@ int main() {
             t->clearStructure();
             break;
         case 5: {
-            int x, y;
-            cout << "Enter x-coordinate: ";
-            cin >> x;
-            cout << "Enter y-coordinate: ";
-            cin >> y;
-            t->findDataWithDuplicates(x, y);
+            double A, D;
+            string B;
+            int C;
+            cout << "Enter attribute A (double): ";
+            cin >> A;
+            cout << "Enter attribute B (string): ";
+            cin >> B;
+            cout << "Enter attribute C (integer): ";
+            cin >> C;
+            cout << "Enter attribute D (double): ";
+            cin >> D;
+            t->findDataWithDuplicates(A, B, C, D);  // Pouívame hodnoty atribútov `TestClass` na vyh¾adávanie
             break;
         }
         case 6: {
             int id;
             cout << "Enter ID of the node: ";
             cin >> id;
-        
-
-            t->deleteTestWithParams(id);
+            t->deleteTestWithParams(id);  // Odstránenie uzla pod¾a `uid` v `TestClass`
             break;
         }
         case 7:  // Nová monos pre vıpis stromu
