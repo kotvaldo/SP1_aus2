@@ -18,7 +18,7 @@ void displayMenu() {
 
 int main() {
     bool end = false;
-    Tester<TestClass>* t = new Tester<TestClass>();  // Pouívame TestClass namiesto Nehnutelnost
+    Tester<TestClass>* t = new Tester<TestClass>();  
 
     while (!end) {
         displayMenu();
