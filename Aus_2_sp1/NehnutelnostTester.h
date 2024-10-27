@@ -8,15 +8,14 @@
 
 using namespace std;
 
-template <typename TestClass>
-class Tester {
+class NehnutelnostTester {
 private:
-    vector<TestClass*> data_list;
-    GeneralKDTree<TestClass, TestClass> tree;
+    vector<Nehnutelnost*> data_list;
+    GeneralKDTree<GPS, Nehnutelnost> tree;
     vector<int> uid_list;
 
 public:
-    Tester() : tree(4) {} // Štyri dimenzie pre 4-rozmerný K-d strom
+    NehnutelnostTester() : tree(2) {} // 2 dimenzie pre GPS
 
     void genPoints(int num_points, int range_min, int range_max, unsigned int seed = 0, bool desc = false) {
         if (seed == 0) {
@@ -24,64 +23,27 @@ public:
         }
         mt19937 gen(seed);
         uniform_int_distribution<> dis(range_min, range_max);
-        uniform_real_distribution<> dis_double(static_cast<double>(range_min), static_cast<double>(range_max));
 
         if (desc) cout << "Using seed: " << seed << endl;
 
         for (int i = 0; i < num_points; ++i) {
             int uid = this->getUnicateId();
-            double A = static_cast<double>(dis(gen));  
-            string B = "Name" + std::to_string(dis(gen) % 100); // Random string
-            int C = dis(gen);
-            double D = static_cast<double>(dis(gen));  
+            int x = dis(gen);
+            int y = dis(gen);
 
-            TestClass* test_obj = new TestClass(uid, A, B, C, D);
-            tree.insert(test_obj, test_obj);
-            data_list.push_back(test_obj);
+            Nehnutelnost* nehn = new Nehnutelnost(uid, new GPS(x, y));
+            tree.insert(nehn, nehn->gps);
+            data_list.push_back(nehn);
 
-            if (desc) cout << "Point " << i + 1 << ": " << *test_obj << " added successfully" << endl;
+            if (desc) cout << "Point " << i + 1 << ": " << *nehn << " added successfully" << endl;
         }
 
         if (desc) treeSizeCheck();
     }
 
-    void testSeeds(int min_seed, int max_seed) {
-        for (int seed = min_seed; seed <= max_seed; ++seed) {
-            cout << "Testing seed: " << seed << endl;
-
-            mt19937 gen(seed);
-            uniform_int_distribution<> dis(0, 100);
-            uniform_real_distribution<> dis_double(0.0, 100.0);
-
-            for (int i = 0; i < 10; ++i) {
-                int uid = this->getUnicateId();
-                double A = dis_double(gen);
-                string B = "Test" + to_string(dis(gen) % 50);
-                int C = dis(gen);
-                double D = dis_double(gen);
-
-                TestClass* test_obj = new TestClass(uid, A, B, C, D);
-                tree.insert(test_obj, test_obj);
-            }
-            treeSizeCheck();
-        }
-    }
-
-    void oscilate(int count) {
-        for (int i = 1; i <= count; ++i) {
-            cout << "Oscillation " << i << " in progress..." << endl;
-            genPoints(10, 0, 100, 0);
-
-            treeSizeCheck();
-
-            clearStructure();
-            cout << "Oscillation " << i << " complete." << endl;
-        }
-    }
-
     void treeSizeCheck() {
         int realSize = 0;
-        tree.inOrderTraversal([&](KDTreeNode<TestClass, TestClass>* node) {
+        tree.inOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
             realSize++;
             });
 
@@ -93,10 +55,10 @@ public:
         }
     }
 
-    void findDataWithDuplicates(double A, string B, int C, double D) {
+    void findDataWithDuplicates(int x, int y) {
         if (tree.size() != 0) {
-            TestClass query_obj(-1, A, B, C, D); // Vytvoríme objekt na vyh¾adávanie pod¾a hodnôt
-            vector<TestClass*> results = tree.find(&query_obj);
+            GPS query_obj(x, y);
+            vector<Nehnutelnost*> results = tree.find(&query_obj);
 
             if (results.empty()) {
                 cout << "No data found for specified attributes." << endl;
@@ -113,10 +75,8 @@ public:
         }
     }
 
-
-
     void deleteTestWithParams(int id) {
-        TestClass* target = nullptr;
+        Nehnutelnost* target = nullptr;
 
         for (auto it = data_list.begin(); it != data_list.end(); ++it) {
             if ((*it)->uid == id) {
@@ -124,6 +84,14 @@ public:
 
                 if (tree.removeNode(target)) {
                     cout << "Entry deleted successfully." << endl;
+
+                    if (target->gps) {
+                        delete target->gps;
+                        target->gps = nullptr;
+                    }
+
+                    delete target;
+                    target = nullptr;
                     data_list.erase(it);
                 }
                 else {
@@ -138,18 +106,61 @@ public:
         }
     }
 
+    void findAllPropertiesInArea(int x1, int y1, int x2, int y2) {
+        GPS pos1(x1, y1);
+        GPS pos2(x2, y2);
+
+        vector<Nehnutelnost*> results1 = tree.find(&pos1);
+        vector<Nehnutelnost*> results2 = tree.find(&pos2);
+
+        vector<Nehnutelnost*> unique_results;
+
+        for (auto& property1 : results1) {
+            bool is_unique = true;
+            for (auto& property2 : unique_results) {
+                if (property1->equals(*property2)) {
+                    is_unique = false;
+                    break;
+                }
+            }
+            if (is_unique) unique_results.push_back(property1);
+        }
+
+        for (auto& property2 : results2) {
+            bool is_unique = true;
+            for (auto& property1 : unique_results) {
+                if (property2->equals(*property1)) {
+                    is_unique = false;
+                    break;
+                }
+            }
+            if (is_unique) unique_results.push_back(property2);
+        }
+
+        if (unique_results.empty()) {
+            cout << "No properties found in the specified area." << endl;
+        }
+        else {
+            cout << "Properties found in area between (" << x1 << ", " << y1 << ") and (" << x2 << ", " << y2 << "):" << endl;
+            for (const auto& property : unique_results) {
+                cout << *property << endl; 
+            }
+        }
+    }
+
+
     void printTreeNodes() {
         if (tree.size() == 0) {
             cout << "The tree is empty." << endl;
             return;
         }
 
-        vector<TestClass*> nodes;
-        tree.inOrderTraversal([&](KDTreeNode<TestClass, TestClass>* node) {
+        vector<Nehnutelnost*> nodes;
+        tree.inOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
             nodes.push_back(node->_data);
             });
 
-        std::sort(nodes.begin(), nodes.end(), [](const TestClass* a, const TestClass* b) {
+        std::sort(nodes.begin(), nodes.end(), [](const Nehnutelnost* a, const Nehnutelnost* b) {
             return a->uid < b->uid;
             });
 
@@ -164,8 +175,10 @@ public:
 
     void clearStructure() {
         tree.clear();
-        for (TestClass* obj : data_list) {
-            delete obj;
+
+        for (Nehnutelnost* obj : data_list) {
+            delete obj->gps;  
+            delete obj;       
         }
 
         uid_list.clear();
@@ -173,7 +186,7 @@ public:
         cout << "All records removed! Current tree size: " << tree.size() << endl;
     }
 
-    ~Tester() {
+    ~NehnutelnostTester() {
         clearStructure();
     }
 

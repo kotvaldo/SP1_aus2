@@ -131,10 +131,12 @@
     <ClCompile Include="Aus_2_sp1.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AreaTester.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="Models.h" />
     <ClInclude Include="KDTree.h" />
+    <ClInclude Include="NehnutelnostTester.h" />
     <ClInclude Include="Tester.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
