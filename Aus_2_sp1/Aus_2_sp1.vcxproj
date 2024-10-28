@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClInclude Include="Controller.h" />
     <ClInclude Include="Database.h" />
+    <ClInclude Include="NehnutelnostTester.h" />
     <ClInclude Include="Models.h" />
     <ClInclude Include="KDTree.h" />
     <ClInclude Include="Tester.h" />

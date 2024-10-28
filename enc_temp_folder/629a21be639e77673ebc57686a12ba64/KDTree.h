@@ -41,8 +41,6 @@ public:
 	KDNodeType* findMaxInLeftSubTree(KDNodeType* parent);
 	KDNodeType* findMinInRightSubTree(KDNodeType* parent);
 	void inOrderTraversal(std::function<void(KDNodeType*)> func, KDNodeType* startNode = nullptr);
-	void levelOrderTraversal(std::function<void(KDNodeType*)> func);
-	void reverseLevelOrderTraversal(std::function<void(KDNodeType*)> func);
 private:
 	int size_;
 	KDNodeType* root;
@@ -294,62 +292,6 @@ inline void GeneralKDTree<KeyType, DataType>::inOrderTraversal(std::function<voi
 		current = current->_right;
 	}
 }
-
-template<typename KeyType, typename DataType>
-void GeneralKDTree<KeyType, DataType>::levelOrderTraversal(std::function<void(KDNodeType*)> func) {
-	if (this->root == nullptr) return;
-
-	std::queue<KDNodeType*> nodeQueue;
-	nodeQueue.push(this->root);
-
-	while (!nodeQueue.empty()) {
-		KDNodeType* current = nodeQueue.front();
-		nodeQueue.pop();
-
-		func(current);
-
-		if (current->_left != nullptr) {
-			nodeQueue.push(current->_left);
-		}
-		if (current->_right != nullptr) {
-			nodeQueue.push(current->_right);
-		}
-	}
-}
-
-template<typename KeyType, typename DataType>
-void GeneralKDTree<KeyType, DataType>::reverseLevelOrderTraversal(std::function<void(KDNodeType*)> func) {
-	if (this->root == nullptr) return;
-
-	std::queue<KDNodeType*> nodeQueue;
-	std::stack<KDNodeType*> nodeStack;
-	nodeQueue.push(this->root);
-
-	while (!nodeQueue.empty()) {
-		KDNodeType* current = nodeQueue.front();
-		nodeQueue.pop();
-
-		nodeStack.push(current);
-
-		// Prechádzame sprava do¾ava, aby sme na stack vložili uzly od pravých listov po ¾avé
-		if (current->_right != nullptr) {
-			nodeQueue.push(current->_right);
-		}
-		if (current->_left != nullptr) {
-			nodeQueue.push(current->_left);
-		}
-	}
-
-	// Spracovávame uzly v obrátenom poradí zo stacku
-	while (!nodeStack.empty()) {
-		KDNodeType* current = nodeStack.top();
-		nodeStack.pop();
-		func(current);
-	}
-}
-
-
-
 
 template<typename KeyType, typename DataType>
 inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findNodeWithData(DataType* data) {

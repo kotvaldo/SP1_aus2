@@ -50,11 +50,14 @@ class Nehnutelnost : public IComparable<Nehnutelnost> {
 public:
     int uid;
     GPS* gps;
+    string nazov; 
 
-    Nehnutelnost(int id, GPS* gpsCoord) : uid(id), gps(new GPS(*gpsCoord)) {}
+    Nehnutelnost(int id, GPS* gpsCoord, const string& name = "")
+        : uid(id), gps(new GPS(*gpsCoord)), nazov(name) {}
 
-    // Copy constructor for deep copy
-    Nehnutelnost(const Nehnutelnost& other) : uid(other.uid), gps(new GPS(*other.gps)) {}
+   
+    Nehnutelnost(const Nehnutelnost& other)
+        : uid(other.uid), gps(new GPS(*other.gps)), nazov(other.nazov) {}
 
     ~Nehnutelnost() { delete gps; }
 
@@ -79,11 +82,15 @@ public:
         }
     }
 
+    // Výpis objektu Nehnutelnost vrátane názvu
     friend ostream& operator<<(ostream& os, const Nehnutelnost& nehnutelnost) {
-        os << "Nehnutelnost(uid: " << nehnutelnost.uid << ", GPS: " << *nehnutelnost.gps << ")";
+        os << "Nehnutelnost(uid: " << nehnutelnost.uid
+            << ", GPS: " << *nehnutelnost.gps
+            << ", Name: " << (nehnutelnost.nazov.empty() ? "Unnamed" : nehnutelnost.nazov) << ")";
         return os;
     }
 };
+
 
 class Parcela : public IComparable<Parcela> {
 public:
