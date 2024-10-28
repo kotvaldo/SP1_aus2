@@ -137,23 +137,77 @@ public:
             return;
         }
 
-        vector<Nehnutelnost*> nodes;
-        tree.inOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
+        checkReferences();
+
+        tree.levelOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
             if (node != nullptr && node->_data != nullptr) {
-                nodes.push_back(node->_data);
+                // Urèenie, èi je uzol koreò, ¾avý, alebo pravý
+                string nodePosition = "Root";  // Predvolená hodnota pre koreò
+                if (node->parent != nullptr) {
+                    if (node->parent->_left == node) {
+                        nodePosition = "L";  // Left child
+                    }
+                    else if (node->parent->_right == node) {
+                        nodePosition = "R";  // Right child
+                    }
+                }
+
+                // Výpis uzla s informáciou o k¾úèi, úrovni a pozícii
+                cout << string(node->_level * 4, ' ')  // Odstup pod¾a úrovne
+                    << nodePosition << " - Key: " << *(node->_keyPart)
+                    << ", Level: " << node->_level
+                    << ", Data: " << *(node->_data) << endl;
             }
             });
 
-        std::sort(nodes.begin(), nodes.end(), [](const Nehnutelnost* a, const Nehnutelnost* b) {
-            return a->uid < b->uid;
-            });
-
-        for (const auto& node : nodes) {
-            cout << *node << endl;
-        }
-
         treeSizeCheck();
     }
+
+
+
+    void checkReferences() {
+        if (tree.size() == 0) {
+            cout << "The tree is empty." << endl;
+            return;
+        }
+
+        bool isConsistent = true; // Flag na sledovanie konzistencie ukazovate¾ov
+
+        tree.levelOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
+            if (node != nullptr) {
+                // Informácie o aktuálnom uzle
+                cout << "Checking node with key: " << *(node->_keyPart) << ", Level: " << node->_level << endl;
+
+                // Kontrola konzistencie pravého dieaa a jeho rodièa
+                if (node->_right != nullptr) {
+                    if (node->_right->parent != node) {
+                        cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "
+                            << "Right child's parent does not match current node." << endl;
+                        cout << "Right child's key: " << *(node->_right->_keyPart) << ", Right child's parent key: "
+                            << *(node->_right->parent->_keyPart) << endl;
+                        isConsistent = false;
+                    }
+                }
+
+                // Kontrola konzistencie ¾avého dieaa a jeho rodièa
+                if (node->_left != nullptr) {
+                    if (node->_left->parent != node) {
+                        cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "
+                            << "Left child's parent does not match current node." << endl;
+                        cout << "Left child's key: " << *(node->_left->_keyPart) << ", Left child's parent key: "
+                            << *(node->_left->parent->_keyPart) << endl;
+                        isConsistent = false;
+                    }
+                }
+            }
+            });
+
+        if (isConsistent) {
+            cout << "All references are consistent." << endl;
+        }
+    }
+
+
 
     void insertNode(int x, int y, string name = "") {
         int uid = this->getUnicateId();  
