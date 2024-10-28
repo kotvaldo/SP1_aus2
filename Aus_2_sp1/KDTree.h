@@ -576,12 +576,9 @@ inline void GeneralKDTree<KeyType, DataType>::reinsertNodesWithSameKey(KDNodeTyp
 }
 
 template<typename KeyType, typename DataType>
-inline bool GeneralKDTree<KeyType, DataType>::removeNodeInRightSubtree(KDNodeType* startNode, DataType* data, int targetDimension)
-{
-	std::cout << "Attempting to remove node with data: " << *data << std::endl;
+inline bool GeneralKDTree<KeyType, DataType>::removeNodeInRightSubtree(KDNodeType* startNode, DataType* data, int targetDimension) {
 	KDNodeType* node = this->findNodeInRightSubtreeWithDimension(startNode, data, targetDimension);
 	if (node == nullptr) {
-		std::cout << "Node not found in the tree." << std::endl;
 		return false;
 	}
 
@@ -593,10 +590,7 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNodeInRightSubtree(KDNodeTyp
 		KDNodeType* currentNode = nodesToDelete.top();
 		nodesToDelete.pop();
 
-		std::cout << "Processing node with key: " << *(currentNode->_keyPart) << std::endl;
-
 		if (isLeaf(currentNode)) {
-			std::cout << "Node is a leaf, deleting it." << std::endl;
 			KDNodeType* parent = currentNode->parent;
 			if (parent != nullptr) {
 				if (isLeftSon(currentNode, parent)) {
@@ -622,38 +616,28 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNodeInRightSubtree(KDNodeTyp
 		}
 
 		if (currentNode->_left != nullptr && currentNode->_right != nullptr) {
-			std::cout << "Node has two children, replacing it with min node from right subtree." << std::endl;
 			KDNodeType* minNode = findMinInRightSubTree(currentNode);
-			std::cout << "Replacing node with key " << *(currentNode->_keyPart)
-				<< " with node having key " << *(minNode->_keyPart) << std::endl;
 			currentNode->_keyPart = minNode->_keyPart;
 			currentNode->_data = minNode->_data;
 			nodesToDelete.push(minNode);
 		}
 		else if (currentNode->_right != nullptr) {
-			std::cout << "Node has only right child, replacing it with min node from right subtree." << std::endl;
 			KDNodeType* minNode = findMinInRightSubTree(currentNode);
-			std::cout << "Replacing node with key " << *(currentNode->_keyPart)
-				<< " with node having key " << *(minNode->_keyPart) << std::endl;
 			currentNode->_keyPart = minNode->_keyPart;
 			currentNode->_data = minNode->_data;
 			nodesToDelete.push(minNode);
 		}
 		else if (currentNode->_left != nullptr) {
-			std::cout << "Node has only left child, replacing it with max node from left subtree." << std::endl;
 			KDNodeType* maxNode = findMaxInLeftSubTree(currentNode);
-			std::cout << "Replacing node with key " << *(currentNode->_keyPart)
-				<< " with node having key " << *(maxNode->_keyPart) << std::endl;
 			currentNode->_keyPart = maxNode->_keyPart;
 			currentNode->_data = maxNode->_data;
 			nodesToDelete.push(maxNode);
 		}
 	}
 
-
-	std::cout << "Node removal completed." << std::endl;
 	return true;
 }
+
 
 
 
