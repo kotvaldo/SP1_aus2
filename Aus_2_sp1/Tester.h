@@ -144,23 +144,17 @@ public:
             return;
         }
 
-        vector<TestClass*> nodes;
-        tree.inOrderTraversal([&](KDTreeNode<TestClass, TestClass>* node) {
-            nodes.push_back(node->_data);
-            });
-
-        std::sort(nodes.begin(), nodes.end(), [](const TestClass* a, const TestClass* b) {
-            return a->uid < b->uid;
-            });
-
-        for (const auto& node : nodes) {
-            if (node != nullptr) {
-                cout << *node << endl;
+        
+        tree.levelOrderTraversal([&](KDTreeNode<TestClass, TestClass>* node) {
+            if (node != nullptr && node->_data != nullptr) {
+                cout << "Key: " << *(node->_keyPart)
+                    << ", Data: " << *(node->_data) << endl;
             }
-        }
+            });
 
         treeSizeCheck();
     }
+
 
     void clearStructure() {
         tree.clear();
@@ -175,6 +169,48 @@ public:
 
     ~Tester() {
         clearStructure();
+    }
+
+    void checkReferences() {
+        if (tree.size() == 0) {
+            cout << "The tree is empty." << endl;
+            return;
+        }
+
+        bool isConsistent = true; // Flag na sledovanie konzistencie ukazovateľov
+
+        tree.levelOrderTraversal([&](KDTreeNode<TestClass, TestClass>* node) {
+            if (node != nullptr) {
+                // Informácie o aktuálnom uzle
+                cout << "Checking node with key: " << *(node->_keyPart) << ", Level: " << node->_level << endl;
+
+                // Kontrola konzistencie pravého dieťaťa a jeho rodiča
+                if (node->_right != nullptr) {
+                    if (node->_right->parent != node) {
+                        cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "
+                            << "Right child's parent does not match current node." << endl;
+                        cout << "Right child's key: " << *(node->_right->_keyPart) << ", Right child's parent key: "
+                            << *(node->_right->parent->_keyPart) << endl;
+                        isConsistent = false;
+                    }
+                }
+
+                // Kontrola konzistencie ľavého dieťaťa a jeho rodiča
+                if (node->_left != nullptr) {
+                    if (node->_left->parent != node) {
+                        cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "
+                            << "Left child's parent does not match current node." << endl;
+                        cout << "Left child's key: " << *(node->_left->_keyPart) << ", Left child's parent key: "
+                            << *(node->_left->parent->_keyPart) << endl;
+                        isConsistent = false;
+                    }
+                }
+            }
+            });
+
+        if (isConsistent) {
+            cout << "All references are consistent." << endl;
+        }
     }
 
     int getUnicateId() {

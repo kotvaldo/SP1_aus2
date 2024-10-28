@@ -539,9 +539,7 @@ inline void GeneralKDTree<KeyType, DataType>::reinsertNodesWithSameKey(KDNodeTyp
 			if (currentNode->_left != nullptr && currentNode->_keyPart->compare(*target_key, target_dimension) <= 0) {
 				nodesToVisit.push(currentNode->_left);
 			}
-			else if (currentNode->_right != nullptr && currentNode->_keyPart->compare(*target_key, target_dimension) > 0) {
-				nodesToVisit.push(currentNode->_right);
-			}
+		
 		}
 	}
 
