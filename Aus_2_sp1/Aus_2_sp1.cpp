@@ -25,6 +25,7 @@ int main() {
         int choice;
         cin >> choice;
 
+
         switch (choice) {
         case 1: {
             int num_points, range_min, range_max, seed;
