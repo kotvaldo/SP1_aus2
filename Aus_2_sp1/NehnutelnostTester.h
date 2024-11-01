@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <iostream>
 #include <vector>
 #include <random>
@@ -6,7 +6,7 @@
 #include <string>
 #include "Models.h"
 #include "KDTree.h"
-
+#define UNKNOWN     "\033[33m"
 using namespace std;
 
 class NehnutelnostTester {
@@ -16,7 +16,7 @@ private:
     vector<int> uid_list;
 
 public:
-    NehnutelnostTester() : tree(2) {} // Dvojrozmerný KD strom pre x a y ako KeyType s dátami typu Nehnutelnost*
+    NehnutelnostTester() : tree(2) {} // DvojrozmernÃ½ KD strom pre x a y ako KeyType s dÃ¡tami typu Nehnutelnost*
 
     void genPoints(int num_points, int range_min, int range_max, unsigned int seed = 0, bool desc = false) {
         if (seed == 0) {
@@ -38,7 +38,6 @@ public:
             data_list.push_back(property);
 
             if (desc) cout << "Point " << i + 1 << ": " << *property << " added successfully" << endl;
-
         }
 
         if (desc) treeSizeCheck();
@@ -81,7 +80,7 @@ public:
             });
 
         if (tree.size() == realSize) {
-            cout << "Tree size verification successful: " << realSize << " nodes in tree." << endl;
+            cout << UNKNOWN << "Tree size verification successful: " << realSize << " nodes in tree." << RESET << endl;
         }
         else {
             cout << "Tree size mismatch! Actual: " << realSize << " vs Expected: " << tree.size() << endl;
@@ -107,6 +106,55 @@ public:
             cout << "Tree is empty. Please generate data first." << endl;
         }
     }
+    void deleteRandomNodes(int count) {
+        // Kontrola, Äi poÄet uzlov na vymazanie nie je vÃ¤ÄÅ¡Ã­ ako veÄ¾kosÅ¥ zoznamu
+        if (count > data_list.size()) {
+            cout << "PoÄet uzlov na vymazanie je vÃ¤ÄÅ¡Ã­ ako poÄet dostupnÃ½ch uzlov." << endl;
+            return;
+        }
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+
+        for (int i = 0; i < count; ++i) {
+            std::uniform_int_distribution<> dis(0, data_list.size() - 1);
+            int randomIndex = dis(gen);
+
+            auto it = data_list.begin();
+            std::advance(it, randomIndex);
+
+            Nehnutelnost* target = *it;
+
+            if (tree.removeNode(target)) {
+                cout << "Node with key " << target->uid << " deleted successfully." << endl;
+                data_list.erase(it);
+                //treeSizeCheck();
+                //this->printTreeNodes();
+            }
+            else {
+                cout << "Failed to delete node with key " << target->uid << endl;
+            }
+        }
+
+        cout << count << " random nodes have been deleted." << endl;
+    }
+    void deleteAll() {
+        while (tree.size() != 0) {
+            auto root = tree.accessRoot();
+
+            if (tree.removeNode(root->_data)) {
+                cout << "Root deleted successfully." << endl;
+            }
+            else {
+                cout << "Failed to delete the root node." << endl;
+                break;
+            }
+
+            treeSizeCheck();
+        }
+
+        cout << "All nodes have been deleted." << endl;
+    }
 
     void deleteNodeById(int id) {
         Nehnutelnost* target = nullptr;
@@ -118,6 +166,7 @@ public:
                 if (tree.removeNode(target)) {
                     cout << "Entry deleted successfully." << endl;
                     data_list.erase(it);
+                    
                 }
                 else {
                     cout << "Failed to delete the entry from the tree." << endl;
@@ -130,7 +179,6 @@ public:
             cout << "No entry found with the given ID: " << id << endl;
         }
     }
-
     void printTreeNodes() {
         if (tree.size() == 0) {
             cout << "The tree is empty." << endl;
@@ -141,29 +189,36 @@ public:
 
         tree.levelOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
             if (node != nullptr && node->_data != nullptr) {
-                // Urèenie, èi je uzol koreò, ¾avý, alebo pravý
-                string nodePosition = "Root";  // Predvolená hodnota pre koreò
-                if (node->parent != nullptr) {
-                    if (node->parent->_left == node) {
-                        nodePosition = "L";  // Left child
-                    }
-                    else if (node->parent->_right == node) {
-                        nodePosition = "R";  // Right child
-                    }
+                string color;
+                string branchIndicator;
+
+                if (node->parent == nullptr) {
+                    color = RESET;
+                    branchIndicator = "";
+                }
+                else if (node->parent->_left == node) {
+                    color = GREEN;
+                    branchIndicator = "|--";
+                }
+                else if (node->parent->_right == node) {
+                    color = RED;
+                    branchIndicator = "`--";
                 }
 
-                // Výpis uzla s informáciou o k¾úèi, úrovni a pozícii
-                cout << string(node->_level * 4, ' ')  // Odstup pod¾a úrovne
-                    << nodePosition << " - Key: " << *(node->_keyPart)
-                    << ", Level: " << node->_level
-                    << ", Data: " << *(node->_data) << endl;
+                cout << color
+                    << string(node->_level * 4, ' ')
+                    << branchIndicator << "Key: " << *(node->_keyPart)
+                    << RESET << endl;
             }
             });
 
         treeSizeCheck();
     }
 
-
+   
+    int treeSize() {
+        return tree.size();
+    }
 
     void checkReferences() {
         if (tree.size() == 0) {
@@ -171,14 +226,14 @@ public:
             return;
         }
 
-        bool isConsistent = true; // Flag na sledovanie konzistencie ukazovate¾ov
+        bool isConsistent = true; // Flag na sledovanie konzistencie ukazovateÄ¾ov
 
         tree.levelOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
             if (node != nullptr) {
-                // Informácie o aktuálnom uzle
+                // InformÃ¡cie o aktuÃ¡lnom uzle
                 cout << "Checking node with key: " << *(node->_keyPart) << ", Level: " << node->_level << endl;
 
-                // Kontrola konzistencie pravého dieaa a jeho rodièa
+                // Kontrola konzistencie pravÃ©ho dieÅ¥aÅ¥a a jeho rodiÄa
                 if (node->_right != nullptr) {
                     if (node->_right->parent != node) {
                         cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "
@@ -189,7 +244,7 @@ public:
                     }
                 }
 
-                // Kontrola konzistencie ¾avého dieaa a jeho rodièa
+                // Kontrola konzistencie Ä¾avÃ©ho dieÅ¥aÅ¥a a jeho rodiÄa
                 if (node->_left != nullptr) {
                     if (node->_left->parent != node) {
                         cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "

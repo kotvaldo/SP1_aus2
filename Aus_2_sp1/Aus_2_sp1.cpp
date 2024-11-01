@@ -17,6 +17,9 @@ void displayMenu() {
 	cout << "8: Insert Node" << endl;  // Nová možnosť pre vloženie uzla
 	cout << "9: Check References" << endl;  // Nová možnosť pre vloženie uzla
 	cout << "10: End" << endl;
+	cout << "11: Delete all by one" << endl;
+	cout << "12: Massive delete (20,0,10,1)" << endl;
+	cout << "13: Massive delete " << endl;
 }
 
 int main() {
@@ -27,7 +30,7 @@ int main() {
 	bool end = false;
 	NehnutelnostTester tester;
 	Tester<TestClass>* t = new Tester<TestClass>();
-	vector<tuple<string, int, int>> nodes = {
+	/*vector<tuple<string, int, int>> nodes = {
 		   {"Senica", 22, 39},
 		   {"Tlmace - urad", 24, 36},
 		   {"Tlmace", 24, 34},
@@ -36,7 +39,7 @@ int main() {
 		   {"Levice", 30, 33},
 		   {"Bojnice", 29, 46},
 		   {"Novaky", 27, 43}
-	};
+	};*/
 	switch (program)
 	{
 	case 1:
@@ -110,6 +113,14 @@ int main() {
 			case 10:
 				end = true;
 				break;
+			case 11: 
+				t->deleteAll();
+				break;
+			case 12:
+				int count;
+				cout << "Enter count of deleted ";
+				cin >> count;
+				t->deleteRandomNodes(count);
 			default:
 				cout << "Invalid option. Please try again." << endl;
 			}
@@ -121,14 +132,14 @@ int main() {
 	case 2:
 		
 
-		for (const auto& [name, x, y] : nodes) {
+		/*for (const auto& [name, x, y] : nodes) {
 			tester.insertNode(x, y, name);
-		}
+		}*/
 		while (!end) {
 			displayMenu();
 			int choice;
 			cin >> choice;
-
+			bool canEnd = false;
 			switch (choice) {
 			case 1: {
 				int num_points, range_min, range_max, seed;
@@ -197,6 +208,27 @@ int main() {
 			}
 			case 10:
 				end = true;
+				break;
+
+			case 11:
+				tester.deleteAll();
+				break;
+
+			case 12:
+			
+				for (size_t i = 0; i < 20; i++)
+				{
+					tester.genPoints(20, 0, 10, 1,true);
+					tester.deleteRandomNodes(20);
+					tester.treeSizeCheck();
+				}
+				break;
+
+			case 13:
+				int count;
+				cout << "Insert operation count" << endl;
+				cin >> count;
+				tester.deleteRandomNodes(count);
 				break;
 			default:
 				cout << "Invalid option. Please try again." << endl;
