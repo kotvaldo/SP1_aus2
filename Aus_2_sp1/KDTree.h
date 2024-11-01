@@ -190,7 +190,7 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data) {
 
 	bool isLeafAfterComing = isLeaf(node);
 	std::stack<KDNodeType*> nodesToDelete;
-	std::vector<KDNodeType*> nodesToReinsert; // Zoznam na uzly, ktorÈ sa maj˙ reinserovaù
+	//std::vector<KDNodeType*> nodesToReinsert; // Zoznam na uzly, ktorÈ sa maj˙ reinserovaù
 
 	nodesToDelete.push(node);
 
@@ -236,7 +236,7 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data) {
 			nodesToDelete.push(minNode);
 
 			// Pridaù minNode do reinsercie
-			nodesToReinsert.push_back(minNode);
+			//nodesToReinsert.push_back(minNode);
 		}
 		else if (currentNode->_right != nullptr) {
 			std::cout << "Node has only right child, replacing it with min node from right subtree." << std::endl;
@@ -248,7 +248,7 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data) {
 			nodesToDelete.push(minNode);
 
 			// Pridaù minNode do reinsercie
-			nodesToReinsert.push_back(minNode);
+			//nodesToReinsert.push_back(minNode);
 		}
 		else if (currentNode->_left != nullptr) {
 			std::cout << "Node has only left child, replacing it with max node from left subtree." << std::endl;
@@ -260,20 +260,20 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data) {
 			nodesToDelete.push(maxNode);
 
 			// Pridaù maxNode do reinsercie
-			nodesToReinsert.push_back(maxNode);
+			//nodesToReinsert.push_back(maxNode);
 		}
 	}
 
 	// Odstr·niù posledn˝ prvok zo zoznamu, pretoûe bol skutoËne odstr·nen˝ a nem· byù reinserovan˝
-	if (!nodesToReinsert.empty()) {
-		nodesToReinsert.pop_back();
-	}
+	//if (!nodesToReinsert.empty()) {
+	//	nodesToReinsert.pop_back();
+	//}
 
-	for (auto it = nodesToReinsert.rbegin(); it != nodesToReinsert.rend(); ++it) {
-		std::cout << "Reinserting nodes with the same key after removal for node with key: "
-			<< *(*it)->_keyPart << std::endl;
-		reinsertNodesWithSameKey(*it);
-	}
+	//for (auto it = nodesToReinsert.rbegin(); it != nodesToReinsert.rend(); ++it) {
+	//	std::cout << "Reinserting nodes with the same key after removal for node with key: "
+	//		<< *(*it)->_keyPart << std::endl;
+	//	reinsertNodesWithSameKey(*it);
+	//}
 	if (!isLeafAfterComing) {
 		std::cout << "Reinserting nodes with the same key after removal for original node." << std::endl;
 		reinsertNodesWithSameKey(node);
@@ -377,31 +377,35 @@ void GeneralKDTree<KeyType, DataType>::reverseLevelOrderTraversal(std::function<
 
 
 
-
 template<typename KeyType, typename DataType>
 inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findNodeWithData(DataType* data) {
-	if (this->size_ == 0) return nullptr;
+    if (this->size_ == 0) return nullptr;
 
-	int level = 0;
-	KDNodeType* current = this->root; 
+    KDNodeType* current = this->root;
+    int level = 0;
 
-	while (current != nullptr) {
-		if (current->_data->equals(*data)) {
-			return current;
-		}
-		int curr_dim = current->_level % this->k;
+    while (current != nullptr) {
+        // Skontroluj, Ëi sa uzol zhoduje vo vöetk˝ch dimenzi·ch
+        if (current->_data->equals(*data)) {
+            return current;
+        }
 
-		int comparison_result = data->compare(*(current->_data), curr_dim);
+        int curr_dim = level % this->k;
+        
+        // Vyuûijeme konkrÈtnu dimenziu na rozhodnutie smeru
+        int comparison_result = data->compare(*(current->_data), curr_dim);
 
-		if (comparison_result <= 0) {
-			current = current->_left;
-		}
-		else {
-			current = current->_right;
-		}
-	}
-	return nullptr;
+        if (comparison_result <= 0) {
+            current = current->_left;
+        } else {
+            current = current->_right;
+        }
+
+        level++; // ZmeÚ dimenziu pri prechode na nov˙ ˙roveÚ
+    }
+    return nullptr;
 }
+
 
 template<typename KeyType, typename DataType>
 KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findNodeInRightSubtreeWithDimension(KDNodeType* node, DataType* data, int target_dimension) {
@@ -526,6 +530,8 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findMinI
 	return minNode;
 }
 
+#include <set> // Pre jedineËnÈ uchovanie uzlov
+
 template<typename KeyType, typename DataType>
 inline void GeneralKDTree<KeyType, DataType>::reinsertNodesWithSameKey(KDNodeType* node) {
 	if (node == nullptr || node->_right == nullptr) {
@@ -533,22 +539,19 @@ inline void GeneralKDTree<KeyType, DataType>::reinsertNodesWithSameKey(KDNodeTyp
 		return;
 	}
 
-
 	KeyType* target_key = node->_keyPart;
 	int target_dimension = node->_level % this->k;
 
-	std::vector<std::pair<DataType*, KeyType*>> nodesToReinsert;
+	std::set<std::pair<DataType*, KeyType*>> nodesToReinsert; // Pouûitie setu na odstr·nenie duplicÌt
 	std::stack<KDNodeType*> nodesToVisit;
 	nodesToVisit.push(node->_right);
-
 
 	while (!nodesToVisit.empty()) {
 		KDNodeType* currentNode = nodesToVisit.top();
 		nodesToVisit.pop();
 
-
 		if (currentNode->_keyPart->compare(*target_key, target_dimension) == 0) {
-			nodesToReinsert.push_back({ currentNode->_data, currentNode->_keyPart });
+			nodesToReinsert.insert({ currentNode->_data, currentNode->_keyPart });
 		}
 
 		if (currentNode->_level % this->k != target_dimension) {
@@ -563,37 +566,36 @@ inline void GeneralKDTree<KeyType, DataType>::reinsertNodesWithSameKey(KDNodeTyp
 			if (currentNode->_left != nullptr && currentNode->_keyPart->compare(*target_key, target_dimension) <= 0) {
 				nodesToVisit.push(currentNode->_left);
 			}
-		
 		}
 	}
 
-	for (auto it = nodesToReinsert.begin(); it != nodesToReinsert.end(); ++it) {
-		auto [data, keyPart] = *it;
+	// Krok 1: Pokus o odstr·nenie uzlov zo stromu pred reinserciou
+	for (const auto& [data, keyPart] : nodesToReinsert) {
 		std::cout << "Attempting to remove node with data: " << *data << std::endl;
-
 		if (findNodeInRightSubtreeWithDimension(node, data, target_dimension) != nullptr) {
 			bool removed = removeNodeInRightSubtree(node, data, target_dimension);
 			if (removed) {
-				std::cout << GREEN << "Node with data " << *data << " removed successfully." << RESET << std::endl;
+				std::cout << GREEN << "Node with data " << *data << " removed successfully while reinsert cycle" << RESET << std::endl;
 			}
 			else {
 				std::cout << RED << "Failed to remove node with data " << *data << std::endl;
 			}
 		}
 		else {
-			std::cout << "Node with data " << *data << " not found in the tree." << std::endl;
+			std::cout << "Node with data " << *data << " not found in the tree while reinsert cycle " << std::endl;
 		}
 	}
 
-	// Krok 2: Reinseruj uzly v norm·lnom poradÌ
-	for (auto it = nodesToReinsert.begin(); it != nodesToReinsert.end(); ++it) {
-		auto [data, keyPart] = *it;
-		std::cout << "Reinserting node with data: " << *data << std::endl;
-		this->insert(data, keyPart);
+	// Krok 2: Reinsercia len ak uzol neexistuje v strome
+	for (const auto& [data, keyPart] : nodesToReinsert) {
+		// Skontrolujeme, Ëi uzol uû nie je v strome
+		if (findNodeWithData(data) == nullptr) {
+			std::cout << "Reinserting node with data: " << *data << std::endl;
+			this->insert(data, keyPart);
+		}
 	}
-
-	
 }
+
 
 template<typename KeyType, typename DataType>
 inline bool GeneralKDTree<KeyType, DataType>::removeNodeInRightSubtree(KDNodeType* startNode, DataType* data, int targetDimension) {
