@@ -128,16 +128,32 @@ public:
             if (tree.removeNode(target)) {
                 cout << "Node with key " << target->uid << " deleted successfully." << endl;
                 data_list.erase(it);
-                //treeSizeCheck();
-                //this->printTreeNodes();
+                delete target; // Uvoľnenie pamäte pre tento uzol
+                target = nullptr; // Nastavenie ukazovateľa na nullptr
             }
             else {
                 cout << "Failed to delete node with key " << target->uid << endl;
             }
+
+            // Synchronizácia data_list po každom odstránení
+            synchronizeDataList();
         }
 
         cout << count << " random nodes have been deleted." << endl;
     }
+
+    // Synchronizácia zoznamu data_list podľa stavu stromu
+    void synchronizeDataList() {
+        vector<Nehnutelnost*> newDataList;
+        tree.inOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
+            if (node && node->_data) {
+                newDataList.push_back(node->_data); // Pridá všetky platné uzly
+            }
+            });
+        data_list = std::move(newDataList); // Nahradí data_list novým synchronizovaným zoznamom
+    }
+
+
     void deleteAll() {
         while (tree.size() != 0) {
             auto root = tree.accessRoot();
@@ -261,7 +277,6 @@ public:
             cout << "All references are consistent." << endl;
         }
     }
-
 
 
     void insertNode(int x, int y, string name = "") {
