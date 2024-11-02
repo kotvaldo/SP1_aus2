@@ -223,7 +223,7 @@ public:
 
                 cout << color
                     << string(node->_level * 4, ' ')
-                    << branchIndicator << "Key: " << *(node->_keyPart)
+                    << branchIndicator << "Key: " << *(node->_data)
                     << RESET << endl;
             }
             });
