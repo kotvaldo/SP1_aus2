@@ -578,9 +578,10 @@ inline void GeneralKDTree<KeyType, DataType>::reinsertNodesWithSameKey(KDNodeTyp
 		for (auto it = nodesToReinsert.begin(); it != nodesToReinsert.end(); ++it) {
 			const auto& [data, keyPart] = *it;
 			std::cout << "Attempting to remove node with data: " << *data << std::endl;
-
+			KDNodeType* found = findNodeInRightSubtreeWithDimension(node, data, target_dimension);
 			bool removed = removeNodeInRightSubtree(node, data, target_dimension);
 			if (removed) {
+				std::cout << "Node with data " << *data << " successfully removed " << std::endl;
 			}
 			else {
 				std::cout << "Node with data " << *data << " not found in the tree while reinsert cycle " << std::endl;
