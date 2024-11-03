@@ -4,6 +4,7 @@
 #include "Models.h"
 #include <functional>
 #include <stack>
+#include <stack>
 #include <queue>
 #include <functional>
 
