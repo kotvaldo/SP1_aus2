@@ -7,6 +7,7 @@
 #include <stack>
 #include <queue>
 #include <functional>
+#include <unordered_set>
 
 #define RESET   "\033[0m"
 #define GREEN   "\033[32m"  // Zelená
@@ -54,11 +55,14 @@ private:
 	int size_;
 	KDNodeType* root;
 	size_t k;
-	KDNodeType* findNodeWithData(DataType* data);
+	KDNodeType* findNodeWithData(DataType* data, KDNodeType* startNode = nullptr);
 	KDTreeNode<KeyType, DataType>* findNodeInRightSubtreeWithDimension(KDNodeType* node, DataType* data, int target_dimension);
 	void reinsertNodesWithSameKey(KDNodeType* node);
 	bool removeNodeInRightSubtree(KDNodeType* startNode, DataType* data, int targetDimension);
 	vector<KDNodeType*> findCorruptedNodes(KDNodeType* startNode);
+	void clearProcessedNodes();
+
+	std::unordered_set<KDNodeType*> processedNodes;
 };
 
 template<typename KeyType, typename DataType>
@@ -183,6 +187,7 @@ vector<DataType*> GeneralKDTree<KeyType, DataType>::find(KeyType* keys) {
 
 template<typename KeyType, typename DataType>
 inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data) {
+	clearProcessedNodes();
 	std::cout << "Attempting to remove node with data: " << *data << std::endl;
 	KDNodeType* node = this->findNodeWithData(data);
 	if (node == nullptr) {
@@ -269,6 +274,7 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data) {
 		nodesToReinsert.pop_back();
 	}
 	if (!isLeafAfterComing) {
+		this->processedNodes.insert(node);
 		reinsertNodesWithSameKey(node);
 
 
@@ -381,20 +387,17 @@ void GeneralKDTree<KeyType, DataType>::reverseLevelOrderTraversal(std::function<
 
 
 template<typename KeyType, typename DataType>
-inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findNodeWithData(DataType* data) {
-	if (this->size_ == 0) return nullptr;
+inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findNodeWithData(DataType* data, KDNodeType* startNode) {
+	if (this->size_ == 0 || data == nullptr) return nullptr;
 
-	KDNodeType* current = this->root;
+	KDNodeType* current = startNode ? startNode : this->root;
 
 	while (current != nullptr) {
-
 		if (current->_data->equals(*data)) {
 			return current;
 		}
 
 		int curr_dim = current->_level % this->k;
-
-
 		int comparison_result = data->compare(*(current->_data), curr_dim);
 
 		if (comparison_result <= 0) {
@@ -403,8 +406,8 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findNode
 		else {
 			current = current->_right;
 		}
-
 	}
+
 	return nullptr;
 }
 
@@ -564,45 +567,74 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findMinI
 	return minNode;
 }
 
-
 template<typename KeyType, typename DataType>
 inline void GeneralKDTree<KeyType, DataType>::reinsertNodesWithSameKey(KDNodeType* node) {
+	if (node == nullptr || node->_right == nullptr) {
+		std::cout << "No right subtree for reinsertion." << std::endl;
+		return;
+	}
+
 	int target_dimension = node->_level % this->k;
+	KeyType* target_key = node->_keyPart;
 
-	vector<KDNodeType*> nodes = findCorruptedNodes(node);
-	vector<pair<DataType*, KeyType*>> nodesToReinsert;
-	if (!nodes.empty()) {
+	std::stack<KDNodeType*> nodesToVisit;
+	std::unordered_map<KeyType*, DataType*> nodesToReinsert;
 
-		for (KDNodeType* k : nodes) {
-			nodesToReinsert.emplace_back(k->_data, k->_keyPart);
-		}
-		for (auto it = nodesToReinsert.begin(); it != nodesToReinsert.end(); ++it) {
-			const auto& [data, keyPart] = *it;
-			std::cout << "Attempting to remove node with data: " << *data << std::endl;
-			KDNodeType* found = findNodeInRightSubtreeWithDimension(node, data, target_dimension);
-			bool removed = removeNodeInRightSubtree(node, data, target_dimension);
-			if (removed) {
-				std::cout << "Node with data " << *data << " successfully removed " << std::endl;
-			}
-			else {
-				std::cout << "Node with data " << *data << " not found in the tree while reinsert cycle " << std::endl;
+	// Inicializujeme návštevu pravého podstromu
+	nodesToVisit.push(node->_right);
+
+	while (!nodesToVisit.empty()) {
+		KDNodeType* currentNode = nodesToVisit.top();
+		nodesToVisit.pop();
+
+		if (currentNode->_keyPart->compare(*target_key, target_dimension) <= 0) {
+			if (nodesToReinsert.find(currentNode->_keyPart) == nodesToReinsert.end()) {
+				nodesToReinsert[currentNode->_keyPart] = currentNode->_data;
 			}
 		}
 
+		int current_dimension = currentNode->_level % this->k;
 
-		for (const auto& [data, keyPart] : nodesToReinsert) {
-
-			if(findNodeWithData(data) == nullptr)
-			this->insert(data, keyPart);
+		if (current_dimension != target_dimension) {
+			if (currentNode->_left != nullptr) {
+				nodesToVisit.push(currentNode->_left);
+			}
+			if (currentNode->_right != nullptr) {
+				nodesToVisit.push(currentNode->_right);
+			}
 		}
-
-		std::cout << "Nodes to reinsert: " << std::endl;
-		for (const auto& [data, keyPart] : nodesToReinsert) {
-			std::cout << "Data: " << *data << ", KeyPart: " << *keyPart << std::endl;
+		else {
+			if (currentNode->_left != nullptr) {
+				nodesToVisit.push(currentNode->_left);
+			}
 		}
 	}
-	
+
+
+	for (const auto& [keyPart, data] : nodesToReinsert) {
+		if (!data || !keyPart) {
+			std::cout << RED << "Null data or keyPart encountered during removal, skipping." << RESET << std::endl;
+			continue;
+		}
+
+		bool removed = removeNodeInRightSubtree(node, data, target_dimension);
+		if (removed) {
+			std::cout << "Node with data " << *data << " successfully removed " << std::endl;
+		}
+
+		if (findNodeWithData(data, node) == nullptr) {
+			this->insert(data, keyPart);
+		}
+		else {
+			std::cout << "Node with data " << *data << " not found in the tree while reinsert cycle " << std::endl;
+		}
+	}
+
+
+
 }
+
+
 
 template<typename KeyType, typename DataType>
 inline vector<KDTreeNode<KeyType, DataType>*> GeneralKDTree<KeyType, DataType>::findCorruptedNodes(KDNodeType* startNode)
@@ -642,6 +674,12 @@ inline vector<KDTreeNode<KeyType, DataType>*> GeneralKDTree<KeyType, DataType>::
 		}
 	}
 	return nodesToReinsert;
+}
+
+template<typename KeyType, typename DataType>
+inline void GeneralKDTree<KeyType, DataType>::clearProcessedNodes()
+{
+	processedNodes.clear();
 }
 
 

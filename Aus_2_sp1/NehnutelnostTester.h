@@ -107,7 +107,6 @@ public:
         }
     }
     void deleteRandomNodes(int count) {
-        // Kontrola, či počet uzlov na vymazanie nie je väčší ako veľkosť zoznamu
         if (count > data_list.size()) {
             cout << "Počet uzlov na vymazanie je väčší ako počet dostupných uzlov." << endl;
             return;
@@ -127,20 +126,19 @@ public:
 
             if (tree.removeNode(target)) {
                 cout << "Node with key " << target->uid << " deleted successfully." << endl;
-                data_list.erase(it);
-                delete target; // Uvoľnenie pamäte pre tento uzol
-                target = nullptr; // Nastavenie ukazovateľa na nullptr
+                data_list.erase(it); // Zabezpečíme odstránenie iterátora
+                delete target; // Uvoľníme pamäť
             }
             else {
                 cout << "Failed to delete node with key " << target->uid << endl;
             }
 
-            // Synchronizácia data_list po každom odstránení
-            synchronizeDataList();
+            // Synchronizácia na konci nie je nutná, pokiaľ pracujeme s aktualizovaným stavom
         }
 
         cout << count << " random nodes have been deleted." << endl;
     }
+
 
     // Synchronizácia zoznamu data_list podľa stavu stromu
     void synchronizeDataList() {
