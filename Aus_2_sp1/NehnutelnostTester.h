@@ -126,29 +126,29 @@ public:
 
             if (tree.removeNode(target)) {
                 cout << "Node with key " << target->uid << " deleted successfully." << endl;
-                data_list.erase(it); // Zabezpečíme odstránenie iterátora
-                delete target; // Uvoľníme pamäť
+                data_list.erase(it); 
+                delete target;
             }
             else {
                 cout << "Failed to delete node with key " << target->uid << endl;
             }
 
-            // Synchronizácia na konci nie je nutná, pokiaľ pracujeme s aktualizovaným stavom
+            
         }
 
         cout << count << " random nodes have been deleted." << endl;
     }
 
 
-    // Synchronizácia zoznamu data_list podľa stavu stromu
+    
     void synchronizeDataList() {
         vector<Nehnutelnost*> newDataList;
         tree.inOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
             if (node && node->_data) {
-                newDataList.push_back(node->_data); // Pridá všetky platné uzly
+                newDataList.push_back(node->_data);
             }
             });
-        data_list = std::move(newDataList); // Nahradí data_list novým synchronizovaným zoznamom
+        data_list = std::move(newDataList); 
     }
 
 
@@ -240,14 +240,13 @@ public:
             return;
         }
 
-        bool isConsistent = true; // Flag na sledovanie konzistencie ukazovateľov
+        bool isConsistent = true; 
 
         tree.levelOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
             if (node != nullptr) {
-                // Informácie o aktuálnom uzle
+          
                 cout << "Checking node with key: " << *(node->_keyPart) << ", Level: " << node->_level << endl;
 
-                // Kontrola konzistencie pravého dieťaťa a jeho rodiča
                 if (node->_right != nullptr) {
                     if (node->_right->parent != node) {
                         cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "
@@ -258,7 +257,6 @@ public:
                     }
                 }
 
-                // Kontrola konzistencie ľavého dieťaťa a jeho rodiča
                 if (node->_left != nullptr) {
                     if (node->_left->parent != node) {
                         cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "
@@ -281,7 +279,7 @@ public:
         int uid = this->getUnicateId();  
 
         GPS* gps_point = new GPS(x, y);
-        Nehnutelnost* property = new Nehnutelnost(uid, gps_point, name);
+        Nehnutelnost* property = new Nehnutelnost(uid, gps_point);
 
         tree.insert(property, gps_point); 
         data_list.push_back(property);  

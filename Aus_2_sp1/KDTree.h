@@ -38,7 +38,7 @@ public:
 	void clear();
 	vector<DataType*> find(KeyType* keys);
 	DataType* insert(DataType* data, KeyType* keys);
-	bool removeNode(DataType* data);
+	bool removeNode(DataType* data, KDNodeType* startNode = nullptr, int targetDimension = -1);
 	size_t size() const;
 	KDNodeType* accessRoot();
 	bool hasLeftSon(KDNodeType* node);
@@ -59,7 +59,7 @@ private:
 	KDTreeNode<KeyType, DataType>* findNodeInRightSubtreeWithDimension(KDNodeType* node, DataType* data, int target_dimension);
 	void reinsertNodesWithSameKey(KDNodeType* node);
 	bool removeNodeInRightSubtree(KDNodeType* startNode, DataType* data, int targetDimension);
-	vector<KDNodeType*> findCorruptedNodes(KDNodeType* startNode);
+	
 	void clearProcessedNodes();
 
 	std::unordered_set<KDNodeType*> processedNodes;
@@ -116,7 +116,7 @@ DataType* GeneralKDTree<KeyType, DataType>::insert(DataType* data, KeyType* keys
 		throw invalid_argument("Keys cannot be nullptr");
 	}
 	if (size_ == 0) {
-		this->root = new KDNodeType(data, keys, 0); // KoreÚ m· ˙roveÚ 0
+		this->root = new KDNodeType(data, keys, 0); 
 		this->size_++;
 		return this->root->_data;
 	}
@@ -142,13 +142,12 @@ DataType* GeneralKDTree<KeyType, DataType>::insert(DataType* data, KeyType* keys
 		current_dimension = level % this->k;
 	}
 
-	// Pri vytv·ranÌ novÈho uzla zv˝öime ˙roveÚ o 1
-	if (keys->compare(*(parent->_keyPart), current_dimension) <= 0) {
-		parent->_left = new KDNodeType(data, keys, level + 1); // Nov˝ uzol m· ˙roveÚ o 1 vyööiu neû rodiË
+		if (keys->compare(*(parent->_keyPart), current_dimension) <= 0) {
+		parent->_left = new KDNodeType(data, keys, level + 1); 
 		current = parent->_left;
 	}
 	else {
-		parent->_right = new KDNodeType(data, keys, level + 1); // Nov˝ uzol m· ˙roveÚ o 1 vyööiu neû rodiË
+		parent->_right = new KDNodeType(data, keys, level + 1); 
 		current = parent->_right;
 	}
 
@@ -186,10 +185,17 @@ vector<DataType*> GeneralKDTree<KeyType, DataType>::find(KeyType* keys) {
 
 
 template<typename KeyType, typename DataType>
-inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data) {
-	clearProcessedNodes();
+inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data, KDNodeType* startNode , int targetDimension) {
+	KDNodeType* node = nullptr;
 	std::cout << "Attempting to remove node with data: " << *data << std::endl;
-	KDNodeType* node = this->findNodeWithData(data);
+	if(startNode == nullptr && targetDimension == -1) {
+		node = this->findNodeWithData(data);
+	}
+	else {
+		node = this->findNodeInRightSubtreeWithDimension(startNode, data, targetDimension);
+	}
+	
+
 	if (node == nullptr) {
 		std::cout << RED << "Node not found in the tree." << RESET << std::endl;
 		return false;
@@ -197,7 +203,7 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data) {
 
 	bool isLeafAfterComing = isLeaf(node);
 	std::stack<KDNodeType*> nodesToDelete;
-	std::vector<KDNodeType*> nodesToReinsert; // Zoznam na uzly, ktorÈ sa maj˙ reinserovaù
+	std::vector<KDNodeType*> nodesToReinsert;
 
 	nodesToDelete.push(node);
 
@@ -298,91 +304,7 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data) {
 
 
 
-template<typename KeyType, typename DataType>
-inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::accessRoot() {
-	if (this->root == nullptr) {
-		throw out_of_range("Structure is empty");
-	}
-	return this->root;
-}
 
-template<typename KeyType, typename DataType>
-inline void GeneralKDTree<KeyType, DataType>::inOrderTraversal(std::function<void(KDNodeType*)> func, KDNodeType* startNode) {
-	if (startNode == nullptr) {
-		startNode = root;
-	}
-
-	if (startNode == nullptr) return;
-
-	std::stack<KDNodeType*> nodeStack;
-	KDNodeType* current = startNode;
-
-	while (!nodeStack.empty() || current != nullptr) {
-		while (current != nullptr) {
-			nodeStack.push(current);
-			current = current->_left;
-		}
-
-		current = nodeStack.top();
-		nodeStack.pop();
-
-		func(current);
-
-		current = current->_right;
-	}
-}
-
-template<typename KeyType, typename DataType>
-void GeneralKDTree<KeyType, DataType>::levelOrderTraversal(std::function<void(KDNodeType*)> func) {
-	if (this->root == nullptr) return;
-
-	std::queue<KDNodeType*> nodeQueue;
-	nodeQueue.push(this->root);
-
-	while (!nodeQueue.empty()) {
-		KDNodeType* current = nodeQueue.front();
-		nodeQueue.pop();
-
-		func(current);
-
-		if (current->_left != nullptr) {
-			nodeQueue.push(current->_left);
-		}
-		if (current->_right != nullptr) {
-			nodeQueue.push(current->_right);
-		}
-	}
-}
-
-template<typename KeyType, typename DataType>
-void GeneralKDTree<KeyType, DataType>::reverseLevelOrderTraversal(std::function<void(KDNodeType*)> func) {
-	if (this->root == nullptr) return;
-
-	std::queue<KDNodeType*> nodeQueue;
-	std::stack<KDNodeType*> nodeStack;
-	nodeQueue.push(this->root);
-
-	while (!nodeQueue.empty()) {
-		KDNodeType* current = nodeQueue.front();
-		nodeQueue.pop();
-
-		nodeStack.push(current);
-
-		if (current->_right != nullptr) {
-			nodeQueue.push(current->_right);
-		}
-		if (current->_left != nullptr) {
-			nodeQueue.push(current->_left);
-		}
-	}
-
-
-	while (!nodeStack.empty()) {
-		KDNodeType* current = nodeStack.top();
-		nodeStack.pop();
-		func(current);
-	}
-}
 
 
 
@@ -448,6 +370,76 @@ KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findNodeInRight
 	}
 
 	return nullptr;
+}
+
+
+template<typename KeyType, typename DataType>
+inline void GeneralKDTree<KeyType, DataType>::reinsertNodesWithSameKey(KDNodeType* node) {
+	if (node == nullptr || node->_right == nullptr) {
+		std::cout << "No right subtree for reinsertion." << std::endl;
+		return;
+	}
+
+	int target_dimension = node->_level % this->k;
+	KeyType* target_key = node->_keyPart;
+
+	std::stack<KDNodeType*> nodesToVisit;
+	std::unordered_map<KeyType*, DataType*> nodesToReinsert;
+
+	nodesToVisit.push(node->_right);
+
+	while (!nodesToVisit.empty()) {
+		KDNodeType* currentNode = nodesToVisit.top();
+		nodesToVisit.pop();
+
+		if (currentNode->_keyPart->compare(*target_key, target_dimension) <= 0) {
+			if (nodesToReinsert.find(currentNode->_keyPart) == nodesToReinsert.end()) {
+				nodesToReinsert[currentNode->_keyPart] = currentNode->_data;
+			}
+		}
+
+		int current_dimension = currentNode->_level % this->k;
+
+		if (current_dimension != target_dimension) {
+			if (currentNode->_left != nullptr) {
+				nodesToVisit.push(currentNode->_left);
+			}
+			if (currentNode->_right != nullptr) {
+				nodesToVisit.push(currentNode->_right);
+			}
+		}
+		else {
+			if (currentNode->_left != nullptr) {
+				nodesToVisit.push(currentNode->_left);
+			}
+		}
+	}
+
+	std::unordered_set<DataType*> reinsertedNodes;
+	for (const auto& [keyPart, data] : nodesToReinsert) {
+		if (!data || !keyPart) {
+			std::cout << RED << "Null data or keyPart encountered during removal, skipping." << RESET << std::endl;
+			continue;
+		}
+
+		if (reinsertedNodes.find(data) != reinsertedNodes.end()) {
+			std::cout << "Node with data " << *data << " already reinserted, skipping." << std::endl;
+			continue;
+		}
+
+		if (findNodeWithData(data, node) != nullptr) {
+			std::cout << "Node with data " << *data << " already exists, skipping reinsertion." << std::endl;
+			continue;
+		}
+
+		bool removed = removeNode(data, node, target_dimension);
+		if (removed) {
+			std::cout << "Node with data " << *data << " successfully removed." << std::endl;
+		}
+
+		this->insert(data, keyPart);
+		reinsertedNodes.insert(data); 
+	}
 }
 
 
@@ -568,221 +560,10 @@ inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::findMinI
 }
 
 template<typename KeyType, typename DataType>
-inline void GeneralKDTree<KeyType, DataType>::reinsertNodesWithSameKey(KDNodeType* node) {
-	if (node == nullptr || node->_right == nullptr) {
-		std::cout << "No right subtree for reinsertion." << std::endl;
-		return;
-	}
-
-	int target_dimension = node->_level % this->k;
-	KeyType* target_key = node->_keyPart;
-
-	std::stack<KDNodeType*> nodesToVisit;
-	std::unordered_map<KeyType*, DataType*> nodesToReinsert;
-
-	// Inicializujeme n·vötevu pravÈho podstromu
-	nodesToVisit.push(node->_right);
-
-	while (!nodesToVisit.empty()) {
-		KDNodeType* currentNode = nodesToVisit.top();
-		nodesToVisit.pop();
-
-		if (currentNode->_keyPart->compare(*target_key, target_dimension) <= 0) {
-			if (nodesToReinsert.find(currentNode->_keyPart) == nodesToReinsert.end()) {
-				nodesToReinsert[currentNode->_keyPart] = currentNode->_data;
-			}
-		}
-
-		int current_dimension = currentNode->_level % this->k;
-
-		if (current_dimension != target_dimension) {
-			if (currentNode->_left != nullptr) {
-				nodesToVisit.push(currentNode->_left);
-			}
-			if (currentNode->_right != nullptr) {
-				nodesToVisit.push(currentNode->_right);
-			}
-		}
-		else {
-			if (currentNode->_left != nullptr) {
-				nodesToVisit.push(currentNode->_left);
-			}
-		}
-	}
-
-
-	for (const auto& [keyPart, data] : nodesToReinsert) {
-		if (!data || !keyPart) {
-			std::cout << RED << "Null data or keyPart encountered during removal, skipping." << RESET << std::endl;
-			continue;
-		}
-
-		bool removed = removeNodeInRightSubtree(node, data, target_dimension);
-		if (removed) {
-			std::cout << "Node with data " << *data << " successfully removed " << std::endl;
-		}
-
-		if (findNodeWithData(data, node) == nullptr) {
-			this->insert(data, keyPart);
-		}
-		else {
-			std::cout << "Node with data " << *data << " not found in the tree while reinsert cycle " << std::endl;
-		}
-	}
-
-
-
-}
-
-
-
-template<typename KeyType, typename DataType>
-inline vector<KDTreeNode<KeyType, DataType>*> GeneralKDTree<KeyType, DataType>::findCorruptedNodes(KDNodeType* startNode)
-{
-	std::vector<KDNodeType*> nodesToReinsert;
-	if (startNode == nullptr || startNode->_right == nullptr) {
-		std::cout << "No right subtree for reinsertion." << std::endl;
-		return nodesToReinsert;
-	}
-
-	KeyType* target_key = startNode->_keyPart;
-	int target_dimension = startNode->_level % this->k;
-
-	std::stack<KDNodeType*> nodesToVisit;
-	nodesToVisit.push(startNode->_right);
-
-	while (!nodesToVisit.empty()) {
-		KDNodeType* currentNode = nodesToVisit.top();
-		nodesToVisit.pop();
-
-		if (currentNode->_keyPart->compare(*target_key, target_dimension) <= 0) {
-			nodesToReinsert.emplace_back(currentNode);
-		}
-
-		if (currentNode->_level % this->k != target_dimension) {
-			if (currentNode->_left != nullptr) {
-				nodesToVisit.push(currentNode->_left);
-			}
-			if (currentNode->_right != nullptr) {
-				nodesToVisit.push(currentNode->_right);
-			}
-		}
-		else {
-			if (currentNode->_left != nullptr) {
-				nodesToVisit.push(currentNode->_left);
-			}
-		}
-	}
-	return nodesToReinsert;
-}
-
-template<typename KeyType, typename DataType>
 inline void GeneralKDTree<KeyType, DataType>::clearProcessedNodes()
 {
 	processedNodes.clear();
 }
-
-
-template<typename KeyType, typename DataType>
-inline bool GeneralKDTree<KeyType, DataType>::removeNodeInRightSubtree(KDNodeType* startNode, DataType* data, int targetDimension) {
-	KDNodeType* node = this->findNodeInRightSubtreeWithDimension(startNode, data, targetDimension);
-	if (node == nullptr) {
-		return false;
-	}
-
-	bool isLeafAfterComing = isLeaf(node);
-	std::stack<KDNodeType*> nodesToDelete;
-	std::vector<KDNodeType*> nodesToReinsert; // Zoznam na uzly, ktorÈ sa maj˙ reinserovaù
-
-	nodesToDelete.push(node);
-
-	while (!nodesToDelete.empty()) {
-		KDNodeType* currentNode = nodesToDelete.top();
-		nodesToDelete.pop();
-
-		std::cout << "Processing node with key: " << *(currentNode->_keyPart) << std::endl;
-
-		if (isLeaf(currentNode)) {
-			std::cout << "Node is a leaf, deleting it." << std::endl;
-			KDNodeType* parent = currentNode->parent;
-			if (parent != nullptr) {
-				if (isLeftSon(currentNode, parent)) {
-					parent->_left = nullptr;
-				}
-				else {
-					parent->_right = nullptr;
-				}
-			}
-			else {
-				this->root = nullptr;
-			}
-			currentNode->_keyPart = nullptr;
-			currentNode->_data = nullptr;
-			currentNode->parent = nullptr;
-			currentNode->_left = nullptr;
-			currentNode->_right = nullptr;
-			delete currentNode;
-			currentNode = nullptr;
-			if (isLeafAfterComing) node = nullptr;
-			this->size_--;
-			continue;
-		}
-
-		if (currentNode->_left != nullptr && currentNode->_right != nullptr) {
-			std::cout << "Node has two children, replacing it with min node from right subtree." << std::endl;
-			KDNodeType* minNode = findMinInRightSubTree(currentNode);
-			std::cout << "Replacing node with key " << *(currentNode->_keyPart)
-				<< " with node having key " << *(minNode->_keyPart) << std::endl;
-			currentNode->_keyPart = minNode->_keyPart;
-			currentNode->_data = minNode->_data;
-			nodesToDelete.push(minNode);
-
-			nodesToReinsert.push_back(minNode);
-		}
-		else if (currentNode->_right != nullptr) {
-			std::cout << "Node has only right child, replacing it with min node from right subtree." << std::endl;
-			KDNodeType* minNode = findMinInRightSubTree(currentNode);
-			std::cout << "Replacing node with key " << *(currentNode->_keyPart)
-				<< " with node having key " << *(minNode->_keyPart) << std::endl;
-			currentNode->_keyPart = minNode->_keyPart;
-			currentNode->_data = minNode->_data;
-			nodesToDelete.push(minNode);
-
-
-			nodesToReinsert.push_back(minNode);
-		}
-		else if (currentNode->_left != nullptr) {
-			std::cout << "Node has only left child, replacing it with max node from left subtree." << std::endl;
-			KDNodeType* maxNode = findMaxInLeftSubTree(currentNode);
-			std::cout << "Replacing node with key " << *(currentNode->_keyPart)
-				<< " with node having key " << *(maxNode->_keyPart) << std::endl;
-			currentNode->_keyPart = maxNode->_keyPart;
-			currentNode->_data = maxNode->_data;
-			nodesToDelete.push(maxNode);
-
-
-			nodesToReinsert.push_back(maxNode);
-		}
-	}
-
-	if (!nodesToReinsert.empty()) {
-		nodesToReinsert.pop_back();
-	}
-	if (!isLeafAfterComing) {
-		reinsertNodesWithSameKey(node);
-
-		std::cout << "Reinserting nodes with the same key after removal for original node." << std::endl;
-	}
-	else {
-		std::cout << "Skipping reinsertion as node was initially a leaf." << std::endl;
-	}
-
-	std::cout << GREEN << "Node removal completed." << RESET << std::endl;
-	return true;
-}
-
-
-
 
 
 template<typename KeyType, typename DataType>
@@ -823,4 +604,90 @@ inline bool GeneralKDTree<KeyType, DataType>::isRightSon(KDNodeType* node, KDNod
 template<typename KeyType, typename DataType>
 size_t GeneralKDTree<KeyType, DataType>::size() const {
 	return size_;
+}
+
+template<typename KeyType, typename DataType>
+inline KDTreeNode<KeyType, DataType>* GeneralKDTree<KeyType, DataType>::accessRoot() {
+	if (this->root == nullptr) {
+		throw out_of_range("Structure is empty");
+	}
+	return this->root;
+}
+
+template<typename KeyType, typename DataType>
+inline void GeneralKDTree<KeyType, DataType>::inOrderTraversal(std::function<void(KDNodeType*)> func, KDNodeType* startNode) {
+	if (startNode == nullptr) {
+		startNode = root;
+	}
+
+	if (startNode == nullptr) return;
+
+	std::stack<KDNodeType*> nodeStack;
+	KDNodeType* current = startNode;
+
+	while (!nodeStack.empty() || current != nullptr) {
+		while (current != nullptr) {
+			nodeStack.push(current);
+			current = current->_left;
+		}
+
+		current = nodeStack.top();
+		nodeStack.pop();
+
+		func(current);
+
+		current = current->_right;
+	}
+}
+
+template<typename KeyType, typename DataType>
+void GeneralKDTree<KeyType, DataType>::levelOrderTraversal(std::function<void(KDNodeType*)> func) {
+	if (this->root == nullptr) return;
+
+	std::queue<KDNodeType*> nodeQueue;
+	nodeQueue.push(this->root);
+
+	while (!nodeQueue.empty()) {
+		KDNodeType* current = nodeQueue.front();
+		nodeQueue.pop();
+
+		func(current);
+
+		if (current->_left != nullptr) {
+			nodeQueue.push(current->_left);
+		}
+		if (current->_right != nullptr) {
+			nodeQueue.push(current->_right);
+		}
+	}
+}
+
+template<typename KeyType, typename DataType>
+void GeneralKDTree<KeyType, DataType>::reverseLevelOrderTraversal(std::function<void(KDNodeType*)> func) {
+	if (this->root == nullptr) return;
+
+	std::queue<KDNodeType*> nodeQueue;
+	std::stack<KDNodeType*> nodeStack;
+	nodeQueue.push(this->root);
+
+	while (!nodeQueue.empty()) {
+		KDNodeType* current = nodeQueue.front();
+		nodeQueue.pop();
+
+		nodeStack.push(current);
+
+		if (current->_right != nullptr) {
+			nodeQueue.push(current->_right);
+		}
+		if (current->_left != nullptr) {
+			nodeQueue.push(current->_left);
+		}
+	}
+
+
+	while (!nodeStack.empty()) {
+		KDNodeType* current = nodeStack.top();
+		nodeStack.pop();
+		func(current);
+	}
 }

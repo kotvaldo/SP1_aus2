@@ -131,8 +131,6 @@
     <ClCompile Include="Aus_2_sp1.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Controller.h" />
-    <ClInclude Include="Database.h" />
     <ClInclude Include="NehnutelnostTester.h" />
     <ClInclude Include="Models.h" />
     <ClInclude Include="KDTree.h" />
