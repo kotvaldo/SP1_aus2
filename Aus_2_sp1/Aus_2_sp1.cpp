@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿#pragma once
+#include <iostream>
 #include "Tester.h"
 #include "NehnutelnostTester.h"
 
@@ -20,6 +21,7 @@ void displayMenu() {
 	cout << "11: Delete all by one" << endl;
 	cout << "12: Massive delete (20,0,10,1)" << endl;
 	cout << "13: Massive delete " << endl;
+	cout << "14: Try all operations + count " << endl;
 }
 
 int main() {
@@ -121,7 +123,14 @@ int main() {
 				cout << "Enter count of deleted ";
 				cin >> count;
 				t->deleteRandomNodes(count);
+			case 14:
+				int pocet;
+				cout << "Random operations, type count of operations" << endl;
+				cin >> pocet;
+				t->randomOperations(pocet);
+				break;
 			default:
+
 				cout << "Invalid option. Please try again." << endl;
 			}
 		}
@@ -230,6 +239,13 @@ int main() {
 				cin >> count;
 				tester.deleteRandomNodes(count);
 				break;
+			case 14:
+				int pocet;
+				cout << "Random operations, type count of operations" << endl;
+				cin >> pocet;
+				tester.randomOperations(pocet);
+				break;
+
 			default:
 				cout << "Invalid option. Please try again." << endl;
 			}

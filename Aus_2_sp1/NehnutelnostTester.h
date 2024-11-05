@@ -1,4 +1,4 @@
-ï»¿#pragma once
+#pragma once
 #include <iostream>
 #include <vector>
 #include <random>
@@ -108,7 +108,7 @@ public:
     }
     void deleteRandomNodes(int count) {
         if (count > data_list.size()) {
-            cout << "PoÄet uzlov na vymazanie je vÃ¤ÄÅ¡Ã­ ako poÄet dostupnÃ½ch uzlov." << endl;
+            cout << "Poèet uzlov na vymazanie je väèší ako poèet dostupných uzlov." << endl;
             return;
         }
 
@@ -126,21 +126,21 @@ public:
 
             if (tree.removeNode(target)) {
                 cout << "Node with key " << target->uid << " deleted successfully." << endl;
-                data_list.erase(it); 
+                data_list.erase(it);
                 delete target;
             }
             else {
                 cout << "Failed to delete node with key " << target->uid << endl;
             }
 
-            
+
         }
 
         cout << count << " random nodes have been deleted." << endl;
     }
 
 
-    
+
     void synchronizeDataList() {
         vector<Nehnutelnost*> newDataList;
         tree.inOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
@@ -148,7 +148,7 @@ public:
                 newDataList.push_back(node->_data);
             }
             });
-        data_list = std::move(newDataList); 
+        data_list = std::move(newDataList);
     }
 
 
@@ -170,6 +170,20 @@ public:
         cout << "All nodes have been deleted." << endl;
     }
 
+    void treeSizeCheck(int count) {
+        int realSize = 0;
+        tree.inOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
+            realSize++;
+            });
+
+        if (count == realSize) {
+            cout << UNKNOWN << "Tree size verification successful: " << realSize << " nodes in tree." << RESET << endl;
+        }
+        else {
+            cout << "Tree size mismatch! Actual: " << realSize << " vs Expected: " << tree.size() << endl;
+        }
+    }
+
     void deleteNodeById(int id) {
         Nehnutelnost* target = nullptr;
 
@@ -180,7 +194,7 @@ public:
                 if (tree.removeNode(target)) {
                     cout << "Entry deleted successfully." << endl;
                     data_list.erase(it);
-                    
+
                 }
                 else {
                     cout << "Failed to delete the entry from the tree." << endl;
@@ -193,6 +207,9 @@ public:
             cout << "No entry found with the given ID: " << id << endl;
         }
     }
+
+
+
     void printTreeNodes() {
         if (tree.size() == 0) {
             cout << "The tree is empty." << endl;
@@ -229,7 +246,7 @@ public:
         treeSizeCheck();
     }
 
-   
+
     int treeSize() {
         return tree.size();
     }
@@ -240,11 +257,11 @@ public:
             return;
         }
 
-        bool isConsistent = true; 
+        bool isConsistent = true;
 
         tree.levelOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
             if (node != nullptr) {
-          
+
                 cout << "Checking node with key: " << *(node->_keyPart) << ", Level: " << node->_level << endl;
 
                 if (node->_right != nullptr) {
@@ -274,15 +291,100 @@ public:
         }
     }
 
+    void randomOperations(int num_operations) {
+       
+        clearStructure();
+        
+        
+        genPoints(20000, 1, 50);
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> prob_dist(0.0, 1.0);  
+        std::uniform_int_distribution<> range_dist(1, 50);     
+
+        int internalCount = tree.size();
+        int countOfInsert = 0;
+        int countOfDelete= 0;
+        int countOfFind = 0;
+
+        for (int i = 0; i < num_operations; ++i) {
+            double prob = prob_dist(gen);
+
+            if (prob < 0.5) {  
+                int uid = getUnicateId();
+                int x = range_dist(gen);
+                int y = range_dist(gen);
+
+                GPS* gps_point = new GPS(x, y);
+                Nehnutelnost* property = new Nehnutelnost(uid, gps_point);
+                tree.insert(property, gps_point);
+                data_list.push_back(property);
+
+                internalCount++;
+                cout << "Inserted: " << *property << endl;
+                countOfInsert++;
+            }
+            else if (prob < 0.75) {  // Find operation
+                countOfFind++;
+                if (data_list.empty()) {
+                    cout << "No data to find." << endl;
+                    continue;
+                }
+
+                int randomIndex = range_dist(gen) % data_list.size();
+                Nehnutelnost* target = data_list[randomIndex];
+                cout << "Finding: " << *target << endl;
+
+                vector<Nehnutelnost*> results = tree.find(target->gps);
+                if (!results.empty()) {
+                    cout << "Found: " << results.size() << " matches." << endl;
+                }
+                else {
+                    cout << "No match found." << endl;
+                }
+            }
+            else {  // Delete operation
+                countOfDelete++;
+                if (data_list.empty()) {
+                    cout << "No data to delete." << endl;
+                    continue;
+                }
+
+                int randomIndex = range_dist(gen) % data_list.size();
+                auto it = data_list.begin() + randomIndex;
+                Nehnutelnost* target = *it;
+
+                cout << "Deleting: " << *target << endl;
+                if (tree.removeNode(target)) {
+                    data_list.erase(it);
+                    internalCount--;
+                    cout << "Deleted successfully." << endl;
+                }
+                else {
+                    cout << "Failed to delete." << endl;
+                }
+            }
+
+            
+        }
+        treeSizeCheck(internalCount);
+        std::cout << "Operations count: " << num_operations << endl;
+        std::cout << "Insert operations count: " << countOfInsert << endl;
+        std::cout << "Find operations count: " << countOfFind << endl;
+        std::cout << "Delete operations count: " << countOfDelete << endl;
+
+
+    }
 
     void insertNode(int x, int y, string name = "") {
-        int uid = this->getUnicateId();  
+        int uid = this->getUnicateId();
 
         GPS* gps_point = new GPS(x, y);
         Nehnutelnost* property = new Nehnutelnost(uid, gps_point);
 
-        tree.insert(property, gps_point); 
-        data_list.push_back(property);  
+        tree.insert(property, gps_point);
+        data_list.push_back(property);
 
         cout << "Node inserted successfully: " << *property << endl;
     }

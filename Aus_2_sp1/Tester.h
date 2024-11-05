@@ -10,6 +10,7 @@ using namespace std;
 #define RESET   "\033[0m"
 #define GREEN   "\033[32m"  // Zelená
 #define RED     "\033[31m"  // Červená
+#define UNKNOWN     "\033[33m"
 
 
 template <typename TestClass>
@@ -48,6 +49,9 @@ public:
 
 		if (desc) treeSizeCheck();
 	}
+
+
+
 
 	void testSeeds(int min_seed, int max_seed) {
 		for (int seed = min_seed; seed <= max_seed; ++seed) {
@@ -91,6 +95,20 @@ public:
 
 		if (tree.size() == realSize) {
 			cout << GREEN << "Tree size verification successful: " << realSize << " nodes in tree." << RESET << endl;
+		}
+		else {
+			cout << "Tree size mismatch! Actual: " << realSize << " vs Expected: " << tree.size() << endl;
+		}
+	}
+
+	void treeSizeCheck(int count) {
+		int realSize = 0;
+		tree.inOrderTraversal([&](KDTreeNode<TestClass, TestClass>* node) {
+			realSize++;
+			});
+
+		if (count == realSize) {
+			cout << UNKNOWN << "Tree size verification successful: " << realSize << " nodes in tree." << RESET << endl;
 		}
 		else {
 			cout << "Tree size mismatch! Actual: " << realSize << " vs Expected: " << tree.size() << endl;
@@ -268,6 +286,69 @@ public:
 			cout << "All references are consistent." << endl;
 		}
 	}
+
+	void randomOperations(int num_operations) {
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<> prob_dist(0.0, 1.0);
+		std::uniform_int_distribution<> range_dist(0, 100);
+
+		int internalCount = tree.size(); // Začiatočný počet uzlov v strome
+
+		for (int i = 0; i < num_operations; ++i) {
+			double prob = prob_dist(gen);
+
+			if (prob < 0.5) { // Insert operation
+				int uid = getUnicateId();
+				double A = range_dist(gen);
+				std::string B = "Name" + std::to_string(range_dist(gen) % 100);
+				int C = range_dist(gen);
+				double D = range_dist(gen);
+				TestClass* test_obj = new TestClass(uid, A, B, C, D);
+				tree.insert(test_obj, test_obj);
+				data_list.push_back(test_obj);
+				internalCount++; 
+				std::cout << "Inserted: " << *test_obj << std::endl;
+			}
+			else if (prob < 0.75) { 
+				if (data_list.empty()) {
+					std::cout << "No data to find." << std::endl;
+					continue;
+				}
+				int randomIndex = range_dist(gen) % data_list.size();
+				TestClass* target = data_list[randomIndex];
+				std::cout << "Finding: " << *target << std::endl;
+				std::vector<TestClass*> results = tree.find(target);
+				if (!results.empty()) {
+					std::cout << "Found: " << results.size() << " matches." << std::endl;
+				}
+				else {
+					std::cout << "No match found." << std::endl;
+				}
+			}
+			else { 
+				if (data_list.empty()) {
+					std::cout << "No data to delete." << std::endl;
+					continue;
+				}
+				int randomIndex = range_dist(gen) % data_list.size();
+				auto it = data_list.begin() + randomIndex;
+				TestClass* target = *it;
+				std::cout << "Deleting: " << *target << std::endl;
+				if (tree.removeNode(target)) {
+					data_list.erase(it);
+					internalCount--; 
+					std::cout << "Deleted successfully." << std::endl;
+				}
+				else {
+					std::cout << "Failed to delete." << std::endl;
+				}
+			}
+
+			treeSizeCheck(internalCount);
+		}
+	}
+
 
 	int getUnicateId() {
 		if (uid_list.empty()) {
