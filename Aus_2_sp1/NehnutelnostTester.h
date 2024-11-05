@@ -16,7 +16,7 @@ private:
     vector<int> uid_list;
 
 public:
-    NehnutelnostTester() : tree(2) {} // Dvojrozmerný KD strom pre x a y ako KeyType s dátami typu Nehnutelnost*
+    NehnutelnostTester() : tree(2) {} 
 
     void genPoints(int num_points, int range_min, int range_max, unsigned int seed = 0, bool desc = false) {
         if (seed == 0) {
