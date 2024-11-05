@@ -218,7 +218,7 @@ int main() {
 			
 				for (size_t i = 0; i < 20; i++)
 				{
-					tester.genPoints(20, 0, 10, 1,true);
+					tester.genPoints(20, 0, 2, 1,true);
 					tester.deleteRandomNodes(20);
 					tester.treeSizeCheck();
 				}

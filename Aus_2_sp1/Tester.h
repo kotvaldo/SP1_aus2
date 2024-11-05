@@ -20,7 +20,7 @@ private:
 	vector<int> uid_list;
 
 public:
-	Tester() : tree(4) {} // Štyri dimenzie pre 4-rozmerný K-d strom
+	Tester() : tree(4) {} 
 
 	void genPoints(int num_points, int range_min, int range_max, unsigned int seed = 0, bool desc = false) {
 		if (seed == 0) {
@@ -35,7 +35,7 @@ public:
 		for (int i = 0; i < num_points; ++i) {
 			int uid = this->getUnicateId();
 			double A = static_cast<double>(dis(gen));
-			string B = "Name" + std::to_string(dis(gen) % 100); // Random string
+			string B = "Name" + std::to_string(dis(gen) % 100); 
 			int C = dis(gen);
 			double D = static_cast<double>(dis(gen));
 
@@ -99,7 +99,7 @@ public:
 
 	void findDataWithDuplicates(double A, string B, int C, double D) {
 		if (tree.size() != 0) {
-			TestClass query_obj(-1, A, B, C, D); // Vytvoríme objekt na vyh¾adávanie pod¾a hodnôt
+			TestClass query_obj(-1, A, B, C, D); 
 			vector<TestClass*> results = tree.find(&query_obj);
 
 			if (results.empty()) {
@@ -204,8 +204,7 @@ public:
 
 		tree.levelOrderTraversal([&](KDTreeNode<TestClass, TestClass>* node) {
 			if (node != nullptr && node->_data != nullptr) {
-				// Vyber farby podľa úrovne
-				std::string color = colors[node->_level % 3];  // Strieda RED, GREEN, RESET podľa úrovne
+				std::string color = colors[node->_level % 3];  
 				cout << color << "Level " << node->_level << " - Key: " << *(node->_keyPart)
 					<< ", Data: " << *(node->_data) << RESET << endl;
 			}
@@ -236,14 +235,13 @@ public:
 			return;
 		}
 
-		bool isConsistent = true; // Flag na sledovanie konzistencie ukazovateľov
+		bool isConsistent = true; 
 
 		tree.levelOrderTraversal([&](KDTreeNode<TestClass, TestClass>* node) {
 			if (node != nullptr) {
-				// Informácie o aktuálnom uzle
+				
 				cout << "Checking node with key: " << *(node->_keyPart) << ", Level: " << node->_level << endl;
 
-				// Kontrola konzistencie pravého dieťaťa a jeho rodiča
 				if (node->_right != nullptr) {
 					if (node->_right->parent != node) {
 						cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "
@@ -254,7 +252,6 @@ public:
 					}
 				}
 
-				// Kontrola konzistencie ľavého dieťaťa a jeho rodiča
 				if (node->_left != nullptr) {
 					if (node->_left->parent != node) {
 						cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "

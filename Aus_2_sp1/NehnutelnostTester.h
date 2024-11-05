@@ -107,7 +107,6 @@ public:
         }
     }
     void deleteRandomNodes(int count) {
-        // Kontrola, či počet uzlov na vymazanie nie je väčší ako veľkosť zoznamu
         if (count > data_list.size()) {
             cout << "Počet uzlov na vymazanie je väčší ako počet dostupných uzlov." << endl;
             return;
@@ -127,17 +126,32 @@ public:
 
             if (tree.removeNode(target)) {
                 cout << "Node with key " << target->uid << " deleted successfully." << endl;
-                data_list.erase(it);
-                //treeSizeCheck();
-                //this->printTreeNodes();
+                data_list.erase(it); 
+                delete target;
             }
             else {
                 cout << "Failed to delete node with key " << target->uid << endl;
             }
+
+            
         }
 
         cout << count << " random nodes have been deleted." << endl;
     }
+
+
+    
+    void synchronizeDataList() {
+        vector<Nehnutelnost*> newDataList;
+        tree.inOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
+            if (node && node->_data) {
+                newDataList.push_back(node->_data);
+            }
+            });
+        data_list = std::move(newDataList); 
+    }
+
+
     void deleteAll() {
         while (tree.size() != 0) {
             auto root = tree.accessRoot();
@@ -207,7 +221,7 @@ public:
 
                 cout << color
                     << string(node->_level * 4, ' ')
-                    << branchIndicator << "Key: " << *(node->_keyPart)
+                    << branchIndicator << "Key: " << *(node->_data)
                     << RESET << endl;
             }
             });
@@ -226,14 +240,13 @@ public:
             return;
         }
 
-        bool isConsistent = true; // Flag na sledovanie konzistencie ukazovateľov
+        bool isConsistent = true; 
 
         tree.levelOrderTraversal([&](KDTreeNode<GPS, Nehnutelnost>* node) {
             if (node != nullptr) {
-                // Informácie o aktuálnom uzle
+          
                 cout << "Checking node with key: " << *(node->_keyPart) << ", Level: " << node->_level << endl;
 
-                // Kontrola konzistencie pravého dieťaťa a jeho rodiča
                 if (node->_right != nullptr) {
                     if (node->_right->parent != node) {
                         cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "
@@ -244,7 +257,6 @@ public:
                     }
                 }
 
-                // Kontrola konzistencie ľavého dieťaťa a jeho rodiča
                 if (node->_left != nullptr) {
                     if (node->_left->parent != node) {
                         cout << "Inconsistency detected at node with key: " << *(node->_keyPart) << " (Level " << node->_level << ") - "
@@ -263,12 +275,11 @@ public:
     }
 
 
-
     void insertNode(int x, int y, string name = "") {
         int uid = this->getUnicateId();  
 
         GPS* gps_point = new GPS(x, y);
-        Nehnutelnost* property = new Nehnutelnost(uid, gps_point, name);
+        Nehnutelnost* property = new Nehnutelnost(uid, gps_point);
 
         tree.insert(property, gps_point); 
         data_list.push_back(property);  
