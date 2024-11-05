@@ -344,8 +344,8 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data, KDNodeT
 
 		}
 		if (original_data && original_key) {
-			this->insert(original_data, original_key);
-
+				this->insert(original_data, original_key);
+		
 		}
 
 
