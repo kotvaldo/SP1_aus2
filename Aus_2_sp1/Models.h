@@ -97,8 +97,8 @@ class Parcela : public IComparable<Parcela> {
 public:
     int uid;
     GPS* gps;
-    int cisloParcely;  // »Ìslo parcely
-    std::string popis; // Popis
+    int cisloParcely;  
+    std::string popis; 
 
     Parcela(int id, GPS* gpsCoord, int cislo = -1, const std::string& desc = "")
         : uid(id), gps(new GPS(*gpsCoord)), cisloParcely(cislo), popis(desc) {}

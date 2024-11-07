@@ -39,6 +39,7 @@ public:
     vector<DataType*> find(KeyType* keys);
     DataType* insert(DataType* data, KeyType* keys);
     bool removeNode(DataType* data, KDNodeType* startNode = nullptr, int targetDimension = -1);
+    bool updateNode(DataType* oldData, KeyType* oldKeys, DataType* newData, KeyType* newKeys);
     size_t size() const;
     KDNodeType* accessRoot();
     bool hasLeftSon(KDNodeType* node);
@@ -357,6 +358,25 @@ inline bool GeneralKDTree<KeyType, DataType>::removeNode(DataType* data, KDNodeT
 
     std::cout << GREEN << "Node removal completed." << RESET << std::endl;
     return true;
+}
+
+template<typename KeyType, typename DataType>
+inline bool GeneralKDTree<KeyType, DataType>::updateNode(DataType* oldData, KeyType* oldKeys, DataType* newData, KeyType* newKeys)
+{
+    KDNodeType* oldNode = findNodeWithData(oldData);
+
+    if (oldNode == nullptr) return false;
+
+    bool isKeyPartChanged = !oldData.equalsByKeys(*newData);
+
+    if (isKeyPartChanged) {
+        oldNode->_data = newData;
+    }
+    else {
+        removeNode(oldData);
+        insert(newData, newKeys);
+    }
+
 }
 
 
