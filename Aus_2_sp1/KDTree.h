@@ -376,7 +376,7 @@ inline bool GeneralKDTree<KeyType, DataType>::updateNode(DataType* oldData, KeyT
         removeNode(oldData);
         insert(newData, newKeys);
     }
-
+    return true;
 }
 
 
